@@ -42,13 +42,17 @@ def read_word_list(filename, n_words=100):
         for line in words_file:
             words.append(line.strip())
 
-    # Select n_words words
-    while len(selected_words) < n_words:
-        # Choose candidate randomly
-        candidate = words[random.randint(0, len(words)-1)]
-        # Append candidate if it's not already there
-        if candidate not in selected_words:
-            selected_words.append(candidate)
+    # If we have few words, we use them all
+    if len(words) <= n_words:
+        selected_words = words
+    # If we have enough words, we have to select
+    else:
+        while len(selected_words) < n_words:
+            # Choose candidate randomly
+            candidate = words[random.randint(0, len(words)-1)]
+            # Append candidate if it's not already there
+            if candidate not in selected_words:
+                selected_words.append(candidate)
 
     # ... and return the list
     return selected_words
