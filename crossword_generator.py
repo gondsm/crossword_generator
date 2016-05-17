@@ -129,8 +129,8 @@ def generate_grid(words, dim):
     This function operates by taking the words it receives and generating an
     expanded dictionary with all possible locations and directions of each
     word. It then adds words at random and, for each word added, removes all
-    possibilities that are now invalid. This is done until the grid is complete
-    or there are no more possibilities.
+    possibilities that are now invalid. This is done until the grid is above a
+    certain completion level.
 
     Each possibility is a dictionary of the kind:
     p["word"] = the actual string
@@ -202,6 +202,7 @@ def write_grid(grid, screen=False, out_file="table.tex"):
             # Write preamble
             texfile.write("\documentclass{article}" + "\n")
             texfile.write(r"\usepackage[utf8]{inputenc}" + "\n")
+            texfile.write(r"\usepackage[table]{xcolor}" + "\n")
             texfile.write("\n")
             texfile.write(r"\begin{document}" + "\n")
 
@@ -209,18 +210,21 @@ def write_grid(grid, screen=False, out_file="table.tex"):
             texfile.write(r"\begin{tabular}{|")
             for i in range(len(grid[0])):
                 texfile.write(r"c|")
-            texfile.write("}\n")
+            texfile.write("}\n\hline\n")
 
             # Write actual table
             for line in grid:
                 for index, element in enumerate(line):
-                    # This feels a bit hacky, suggestions appreciated
-                    if index == len(line)-1:
-                        texfile.write(str(element))
+                    if element == 0:
+                        texfile.write(r"\cellcolor{black}0")
                     else:
-                        texfile.write(str(element) + " & ")
+                        texfile.write(str(element))
+                    # This feels a bit hacky, suggestions appreciated
+                    if index != len(line)-1:
+                        texfile.write(" & ")
 
-                texfile.write(r"\\" + "\n")
+
+                texfile.write(r"\\ \hline" + "\n")
 
             # End environments
             texfile.write("\end{tabular}\n")
