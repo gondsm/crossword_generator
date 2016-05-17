@@ -9,6 +9,10 @@ if you're one of those people.
 # STL imports
 import random
 import pprint
+import subprocess
+import tempfile
+import os
+import shutil
 
 
 # Auxiliary Functions
@@ -222,8 +226,28 @@ def write_grid(grid, screen=False, out_file="table.tex"):
             texfile.write("\end{tabular}\n")
             texfile.write("\end{document}\n")
 
-            # Compile
-            # TODO
+        # Compile in a temp folder
+        # (inspired by
+        # https://stackoverflow.com/questions/19683123/compile-latex-from-python)
+        if not screen:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # Save current directory
+                original_dir = os.getcwd()
+
+                # Copy the latex source to the temporary directory
+                shutil.copy(out_file, tmpdir)
+
+                # Move to the temp directory
+                os.chdir(tmpdir)
+
+                # Rename .tex file to generic name "out"
+                os.rename(out_file, "out.tex")
+
+                # Compile
+                proc = subprocess.call(['pdflatex', "out.tex"])
+
+                # Copy PDF back to the original directory
+                shutil.copy("out.pdf", original_dir)
 
 
 if __name__ == "__main__":
