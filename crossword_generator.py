@@ -193,7 +193,7 @@ def generate_grid(words, dim):
     # ... and return the grid
     return {"grid": grid, "words": added_words}
 
-def write_grid(grid, screen=False, out_file="table.tex"):
+def write_grid(grid, screen=False, out_file="table.tex", words=[]):
     """ This function receives the generated grid and writes it to the file (or
     to the screen, if that's what we want). The grid is expected to be a list
     of lists.
@@ -213,6 +213,7 @@ def write_grid(grid, screen=False, out_file="table.tex"):
             texfile.write(r"\usepackage[table]{xcolor}" + "\n")
             texfile.write("\n")
             texfile.write(r"\begin{document}" + "\n")
+            texfile.write(r"\section*{Complete grid}" + "\n")
 
             # Write table environment and format
             texfile.write(r"\begin{tabular}{|")
@@ -231,14 +232,16 @@ def write_grid(grid, screen=False, out_file="table.tex"):
                     if index != len(line)-1:
                         texfile.write(" & ")
 
-
                 texfile.write(r"\\ \hline" + "\n")
 
             # End tabular environment
             texfile.write("\end{tabular}\n")
 
             # Write the words that were used
-            # TODO
+            if words:
+                texfile.write(r"\section*{Words used for the problem}" + "\n")
+                for word in words:
+                    texfile.write(word + r"\\")
 
             # End document
             texfile.write("\end{document}\n")
@@ -278,9 +281,9 @@ if __name__ == "__main__":
 
     # Show grid
     print("Final grid:")
-    write_grid(grid["grid"], True)
+    write_grid(grid["grid"], screen=True)
     print("Words:")
     pprint.pprint(grid["words"])
 
     # Print to file and compile
-    write_grid(grid["words"])
+    write_grid(grid["grid"], words=[x["word"] for x in grid["words"]])
