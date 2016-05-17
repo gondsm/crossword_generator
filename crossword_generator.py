@@ -133,10 +133,10 @@ def generate_grid(words, dim):
     certain completion level.
 
     Return:
-    This function returns a list, in which list[0] is the grid, and list[1] is
-    the list of included words. The grid is a simple list of lists, where
-    zeroes represent the slots that were not filled in, with the remaining
-    slots containing a single letter each.
+    This function returns a dictionary, in which ["grid"] is the grid, and
+    "words" is the list of included words. The grid is a simple list of lists,
+    where zeroes represent the slots that were not filled in, with the
+    remaining slots containing a single letter each.
 
     Assumptions:
     Each possibility is a dictionary of the kind:
@@ -191,7 +191,7 @@ def generate_grid(words, dim):
         #print("Occupancy: {}.".format(occupancy))
 
     # ... and return the grid
-    return [grid, added_words]
+    return {"grid": grid, "words": added_words}
 
 def write_grid(grid, screen=False, out_file="table.tex"):
     """ This function receives the generated grid and writes it to the file (or
@@ -278,9 +278,9 @@ if __name__ == "__main__":
 
     # Show grid
     print("Final grid:")
-    write_grid(grid[0], True)
+    write_grid(grid["grid"], True)
     print("Words:")
-    pprint.pprint(grid[1])
+    pprint.pprint(grid["words"])
 
     # Print to file and compile
-    write_grid(grid[0])
+    write_grid(grid["words"])
