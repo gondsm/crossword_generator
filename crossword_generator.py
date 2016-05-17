@@ -11,19 +11,42 @@ import random
 
 
 # Auxiliary Functions
-def generate_possibilities(words):
+def generate_possibilities(words, dim):
     """ This function generates the possibilities (see generate_grid) """
     # Initialize the list of possibilities
     possibilities = []
 
     # For every word in the list
-    #for word in words:
+    for word in words:
+        # D = E
+        for i in range(dim[0]):
+            for j in range(dim[1] - len(word)):
+                possibilities.append({"word": word,
+                                      "location": [i, j],
+                                      "D": "E"})
+
+        # D = S
+        for i in range(dim[0] - len(word)):
+            for j in range(dim[1]):
+                possibilities.append({"word": word,
+                                      "location": [i, j],
+                                      "D": "S"})
+
+    # ... and return all of the possibilities.
+    return possibilities
 
 
 def is_valid(possibility, grid):
     """ This function determines whether a possibility is still valid in the
-    given grid.
+    given grid. (see generate_grid)
     TODO: Explain rules
+    """
+    ...
+
+
+def add_possibility_to_grid(possibility, grid):
+    """ Adds a possibility to the given grid, which is modified in-place.
+    (see generate_grid)
     """
     ...
 
@@ -75,7 +98,18 @@ def generate_grid(words, dim):
     p["location"] = the [i,j] list with the location
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
-    ...
+    print("Generating {} grid with {} words.".format(dim, len(words)))
+    # Initialize grid
+    grid = [[-1]*dim[1]]*dim[0]
+    print("Initial grid:")
+    write_grid(grid, True)
+
+    # Generate all possibilities
+    possibilities = generate_possibilities(words, dim)
+    #print(possibilities)
+    #print("Generated {} possibilities".format(len(possibilities)))
+
+
 
 
 def write_grid(grid, screen=False, out_file="table.tex"):
@@ -137,7 +171,7 @@ def test_write_grid():
 
 if __name__ == "__main__":
     words = read_word_list("words.txt")
-    print(words)
-    #grid = generate_grid(words, [20,20])
-    #write_grid(grid)
+    #print(words)
+    grid = generate_grid(words, [20,20])
+    write_grid(grid)
     #test_write_grid()
