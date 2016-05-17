@@ -6,10 +6,19 @@ crosswod puzzle, which is then printed to PDF, and can be printed to actual,
 if you're one of those people.
 """
 
+# STL imports
+import random
+
+
 # Auxiliary Functions
 def generate_possibilities(words):
     """ This function generates the possibilities (see generate_grid) """
-    ...
+    # Initialize the list of possibilities
+    possibilities = []
+
+    # For every word in the list
+    #for word in words:
+
 
 def is_valid(possibility, grid):
     """ This function determines whether a possibility is still valid in the
@@ -18,20 +27,32 @@ def is_valid(possibility, grid):
     """
     ...
 
+
 # Basic Functions
-def read_word_list(filename):
+def read_word_list(filename, n_words=100):
     """ This function reads the file and returns the words read. It expects a
     file where each word is in a line.
     """
-    # Initialize words list
+    # Initialize words lists
     words = []
+    selected_words = []
 
     # Quick'n'dirty file reading
     with open(filename) as words_file:
         for line in words_file:
             words.append(line.strip())
 
-    return words
+    # Select n_words words
+    while len(selected_words) < n_words:
+        # Choose candidate randomly
+        candidate = words[random.randint(0, len(words)-1)]
+        # Append candidate if it's not already there
+        if candidate not in selected_words:
+            selected_words.append(candidate)
+
+    # ... and return the list
+    return selected_words
+
 
 def generate_grid(words, dim):
     """ This function receives a list of words and creates a new grid, which
@@ -44,9 +65,16 @@ def generate_grid(words, dim):
     word. It then adds words at random and, for each word added, removes all
     possibilities that are now invalid. This is done until the grid is complete
     or there are no more possibilities.
-    """
 
-def write_grid(grid, screen = False, out_file = "table.tex"):
+    Each possibility is a dictionary of the kind:
+    p["word"] = the actual string
+    p["location"] = the [i,j] list with the location
+    p["D"] = the direction of the possibility (E for ->, S for down)
+    """
+    ...
+
+
+def write_grid(grid, screen=False, out_file="table.tex"):
     """ This function receives the generated grid and writes it to the file (or
     to the screen, if that's what we want). The grid is expected to be a list
     of lists.
@@ -88,6 +116,7 @@ def write_grid(grid, screen = False, out_file = "table.tex"):
             # Compile
             # TODO
 
+
 # Test cases
 def test_write_grid():
     # Sample grid
@@ -103,7 +132,8 @@ def test_write_grid():
     write_grid(grid, True)
 
 if __name__ == "__main__":
-    #words = read_word_list("words.txt")
+    words = read_word_list("words.txt")
+    print(words)
     #grid = generate_grid(words, [20,20])
     #write_grid(grid)
-    test_write_grid()
+    #test_write_grid()
