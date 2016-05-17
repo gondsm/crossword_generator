@@ -44,12 +44,22 @@ def is_valid(possibility, grid):
     ...
 
 
-def add_possibility_to_grid(possibility, grid):
+def add_word_to_grid(possibility, grid):
     """ Adds a possibility to the given grid, which is modified in-place.
     (see generate_grid)
     """
-    ...
+    i = possibility["location"][0]
+    j = possibility["location"][1]
+    word = possibility["word"]
 
+    # Word is left-to-right
+    if possibility["D"] == "E":
+        grid[i][j:len(list(word))+j] = list(word)
+    # Word is top-to-bottom
+    # (I can't seem to be able to use the slicing as above)
+    if possibility["D"] == "S":
+        for index, a in enumerate(list(word)):
+            grid[i+index][j] = a
 
 # Basic Functions
 def read_word_list(filename, n_words=100):
@@ -100,7 +110,8 @@ def generate_grid(words, dim):
     """
     print("Generating {} grid with {} words.".format(dim, len(words)))
     # Initialize grid
-    grid = [[-1]*dim[1]]*dim[0]
+
+    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
     print("Initial grid:")
     write_grid(grid, True)
 
@@ -109,6 +120,16 @@ def generate_grid(words, dim):
     #print(possibilities)
     #print("Generated {} possibilities".format(len(possibilities)))
 
+    new = possibilities[random.randint(0, len(possibilities)-1)]
+    while new["D"] is not "S":
+        new = possibilities[random.randint(0, len(possibilities)-1)]
+
+    print("Adding new word:")
+    print(new)
+    add_word_to_grid(new, grid)
+
+    print("After modification:")
+    write_grid(grid, True)
 
 
 
@@ -120,7 +141,9 @@ def write_grid(grid, screen=False, out_file="table.tex"):
     if screen is True:
         # Print grid to the screen
         for line in grid:
-            print(line)
+            for element in line:
+                print(" {}".format(element), end="")
+            print()
     else:
         # Print grid to the file and compile
         with open(out_file, "w") as texfile:
