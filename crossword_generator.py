@@ -41,7 +41,7 @@ def is_valid(possibility, grid):
     given grid. (see generate_grid)
     TODO: Explain rules
     """
-    ...
+    return True
 
 
 def add_word_to_grid(possibility, grid):
@@ -120,18 +120,33 @@ def generate_grid(words, dim):
     #print(possibilities)
     #print("Generated {} possibilities".format(len(possibilities)))
 
-    new = possibilities[random.randint(0, len(possibilities)-1)]
-    while new["D"] is not "S":
+    # Fill in grid
+    occupancy = 0
+    while occupancy < 0.9:
+        # Add new possibility
         new = possibilities[random.randint(0, len(possibilities)-1)]
 
-    print("Adding new word:")
-    print(new)
-    add_word_to_grid(new, grid)
+        # Debug prints
+        print("Adding new word:")
+        print(new)
+        add_word_to_grid(new, grid)
+        print("After modification:")
+        write_grid(grid, True)
 
-    print("After modification:")
-    write_grid(grid, True)
+        # Remove invalid possibilities
+        # (we're reading the list backwards, I'd like to replace this with a
+        # comprehension)
+        for i in range(len(possibilities)-1, -1, -1):
+            if not is_valid(possibilities[i], grid):
+                possibilities.pop(i)
 
 
+        # Calculate occupancy
+        occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
+        #print("Occupancy: {}.".format(occupancy))
+
+    # ... and return the grid
+    return grid
 
 def write_grid(grid, screen=False, out_file="table.tex"):
     """ This function receives the generated grid and writes it to the file (or
@@ -164,9 +179,9 @@ def write_grid(grid, screen=False, out_file="table.tex"):
                 for index, element in enumerate(line):
                     # This feels a bit hacky, suggestions appreciated
                     if index == len(line)-1:
-                        texfile.write(element)
+                        texfile.write(str(element))
                     else:
-                        texfile.write(element + " & ")
+                        texfile.write(str(element) + " & ")
 
                 texfile.write(r"\\" + "\n")
 
