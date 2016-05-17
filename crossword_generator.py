@@ -28,19 +28,64 @@ def generate_grid(words, dim):
     TODO: detail algorithm
     """
 
-def write_grid(grid, screen = False):
+def write_grid(grid, screen = False, out_file = "table.tex"):
     """ This function receives the generated grid and writes it to the file (or
     to the screen, if that's what we want). The grid is expected to be a list
     of lists.
     """
     if screen is True:
         # Print grid to the screen
-        print(grid)
+        for line in grid:
+            print(line)
     else:
         # Print grid to the file and compile
-        ...
+        with open(out_file, "w") as texfile:
+            # Write preamble
+            texfile.write("\documentclass{article}" + "\n")
+            texfile.write(r"\usepackage[utf8]{inputenc}" + "\n")
+            texfile.write("\n")
+            texfile.write(r"\begin{document}" + "\n")
+
+            # Write table environment and format
+            texfile.write(r"\begin{tabular}{|")
+            for i in range(len(grid[0])):
+                texfile.write(r"c|")
+            texfile.write("}\n")
+
+            # Write actual table
+            for line in grid:
+                for index, element in enumerate(line):
+                    # This feels a bit hacky, suggestions appreciated
+                    if index == len(line)-1:
+                        texfile.write(element)
+                    else:
+                        texfile.write(element + " & ")
+
+                texfile.write(r"\\" + "\n")
+
+            # End environments
+            texfile.write("\end{tabular}\n")
+            texfile.write("\end{document}\n")
+
+            # Compile
+            # TODO
+
+# Test cases
+def test_write_grid():
+    # Sample grid
+    grid = [["a", "b", "c", "p"],
+            ["e", "k", "l", "ç"],
+            ["s", "g", "e", "ã"],
+            ["s", "g", "e", "ã"],
+            ["s", "g", "e", "ã"],
+            ]
+
+    # Write to screen and file
+    write_grid(grid)
+    write_grid(grid, True)
 
 if __name__ == "__main__":
-    words = read_word_list("words.txt")
-    grid = generate_grid(words, [20,20])
-    write_grid(grid)
+    #words = read_word_list("words.txt")
+    #grid = generate_grid(words, [20,20])
+    #write_grid(grid)
+    test_write_grid()
