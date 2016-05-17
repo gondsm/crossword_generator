@@ -226,26 +226,18 @@ def write_grid(grid, screen=False, out_file="table.tex"):
             # TODO
 
 
-# Test cases
-def test_write_grid():
-    # Sample grid
-    grid = [["a", "b", "c", "p"],
-            ["e", "k", "l", "ç"],
-            ["s", "g", "e", "ã"],
-            ["s", "g", "e", "ã"],
-            ["s", "g", "e", "ã"],
-            ]
-
-    # Write to screen and file
-    write_grid(grid)
-    write_grid(grid, True)
-
 if __name__ == "__main__":
+    # Read words from file
     words = read_word_list("words.txt")
-    #print(words)
+
+    # Generate grid
     grid = generate_grid(words, [20,20])
+
+    # Show grid
     print("Final grid:")
     write_grid(grid[0], True)
     print("Words:")
     pprint.pprint(grid[1])
-    #test_write_grid()
+
+    # Print to file and compile
+    write_grid(grid[0])
