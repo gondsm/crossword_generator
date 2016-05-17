@@ -132,12 +132,20 @@ def generate_grid(words, dim):
     possibilities that are now invalid. This is done until the grid is above a
     certain completion level.
 
+    Return:
+    This function returns a list, in which list[0] is the grid, and list[1] is
+    the list of included words. The grid is a simple list of lists, where
+    zeroes represent the slots that were not filled in, with the remaining
+    slots containing a single letter each.
+
+    Assumptions:
     Each possibility is a dictionary of the kind:
     p["word"] = the actual string
     p["location"] = the [i,j] list with the location
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
-    print("Generating {} grid with {} words.".format(dim, len(words)))
+    # TODO: Avoid word repetition
+    #print("Generating {} grid with {} words.".format(dim, len(words)))
 
     # Initialize grid
     grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
@@ -154,7 +162,7 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.2:
+    while occupancy < 0.5:
         # Add new possibility
         new = possibilities[random.randint(0, len(possibilities)-1)]
 
@@ -226,14 +234,20 @@ def write_grid(grid, screen=False, out_file="table.tex"):
 
                 texfile.write(r"\\ \hline" + "\n")
 
-            # End environments
+            # End tabular environment
             texfile.write("\end{tabular}\n")
+
+            # Write the words that were used
+            # TODO
+
+            # End document
             texfile.write("\end{document}\n")
 
         # Compile in a temp folder
         # (inspired by
         # https://stackoverflow.com/questions/19683123/compile-latex-from-python)
         if not screen:
+            print("\n=== Compiling the generated latex file! ===")
             with tempfile.TemporaryDirectory() as tmpdir:
                 # Save current directory
                 original_dir = os.getcwd()
@@ -252,6 +266,7 @@ def write_grid(grid, screen=False, out_file="table.tex"):
 
                 # Copy PDF back to the original directory
                 shutil.copy("out.pdf", original_dir)
+            print("=== Done! ===\n")
 
 
 if __name__ == "__main__":
