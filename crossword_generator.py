@@ -6,7 +6,19 @@ crosswod puzzle, which is then printed to PDF, and can be printed to actual,
 if you're one of those people.
 """
 
+# Auxiliary Functions
+def generate_possibilities(words):
+    """ This function generates the possibilities (see generate_grid) """
+    ...
 
+def is_valid(possibility, grid):
+    """ This function determines whether a possibility is still valid in the
+    given grid.
+    TODO: Explain rules
+    """
+    ...
+
+# Basic Functions
 def read_word_list(filename):
     """ This function reads the file and returns the words read. It expects a
     file where each word is in a line.
@@ -25,7 +37,13 @@ def generate_grid(words, dim):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
     dim[0] * dim[1] (rows * columns).
-    TODO: detail algorithm
+
+    Algorithm:
+    This function operates by taking the words it receives and generating an
+    expanded dictionary with all possible locations and directions of each
+    word. It then adds words at random and, for each word added, removes all
+    possibilities that are now invalid. This is done until the grid is complete
+    or there are no more possibilities.
     """
 
 def write_grid(grid, screen = False, out_file = "table.tex"):
