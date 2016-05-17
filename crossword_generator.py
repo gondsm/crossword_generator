@@ -8,6 +8,7 @@ if you're one of those people.
 
 # STL imports
 import random
+import pprint
 
 
 # Auxiliary Functions
@@ -39,8 +40,31 @@ def generate_possibilities(words, dim):
 def is_valid(possibility, grid):
     """ This function determines whether a possibility is still valid in the
     given grid. (see generate_grid)
-    TODO: Explain rules
+
+    A possibility is deemed invalid if:
+     -> it collides with any word that already exists, i.e. if any of its
+     elements does not match the words already in the grid;
+     -> it would be placed too close to another word, so that it would give rise
+     to many short non-words;
     """
+    # Import possibility to local vars, for clarity
+    i = possibility["location"][0]
+    j = possibility["location"][1]
+    word = possibility["word"]
+    D = possibility["D"]
+
+    # Detect collisions
+    for k, letter in enumerate(list(word)):
+        if D is "E":
+            if grid[i][j+k] != 0 and grid[i][j+k] != letter:
+                return False
+        if D is "S":
+            if grid[i+k][j] != 0 and grid[i+k][j] != letter:
+                return False
+
+    # Detect proximity
+
+    # If we can't find any collisions, it must be okay!
     return True
 
 
@@ -48,6 +72,7 @@ def add_word_to_grid(possibility, grid):
     """ Adds a possibility to the given grid, which is modified in-place.
     (see generate_grid)
     """
+    # Import possibility to local vars, for clarity
     i = possibility["location"][0]
     j = possibility["location"][1]
     word = possibility["word"]
@@ -109,11 +134,14 @@ def generate_grid(words, dim):
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
     print("Generating {} grid with {} words.".format(dim, len(words)))
-    # Initialize grid
 
+    # Initialize grid
     grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
-    print("Initial grid:")
-    write_grid(grid, True)
+    #print("Initial grid:")
+    #write_grid(grid, True)
+
+    # Initialize the list of added words
+    added_words = []
 
     # Generate all possibilities
     possibilities = generate_possibilities(words, dim)
@@ -122,16 +150,21 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.9:
+    while occupancy < 0.2:
         # Add new possibility
         new = possibilities[random.randint(0, len(possibilities)-1)]
 
         # Debug prints
-        print("Adding new word:")
-        print(new)
+        #print("Adding new word:")
+        #print(new)
+
+        # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
-        print("After modification:")
-        write_grid(grid, True)
+        added_words.append(new)
+
+        # Debug prints
+        #print("After modification:")
+        #write_grid(grid, True)
 
         # Remove invalid possibilities
         # (we're reading the list backwards, I'd like to replace this with a
@@ -146,7 +179,7 @@ def generate_grid(words, dim):
         #print("Occupancy: {}.".format(occupancy))
 
     # ... and return the grid
-    return grid
+    return [grid, added_words]
 
 def write_grid(grid, screen=False, out_file="table.tex"):
     """ This function receives the generated grid and writes it to the file (or
@@ -211,5 +244,8 @@ if __name__ == "__main__":
     words = read_word_list("words.txt")
     #print(words)
     grid = generate_grid(words, [20,20])
-    write_grid(grid)
+    print("Final grid:")
+    write_grid(grid[0], True)
+    print("Words:")
+    pprint.pprint(grid[1])
     #test_write_grid()
