@@ -50,6 +50,7 @@ def is_valid(possibility, grid):
      elements does not match the words already in the grid;
      -> it would be placed too close to another word, so that it would give rise
      to many short non-words;
+     -> if the cell that precedes and succedes it in its direction is not empty.
     """
     # Import possibility to local vars, for clarity
     i = possibility["location"][0]
@@ -57,34 +58,38 @@ def is_valid(possibility, grid):
     word = possibility["word"]
     D = possibility["D"]
 
-    # Detect collisions
+    # Detect collisions and proximity
     for k, letter in enumerate(list(word)):
         if D is "E":
             # Collisions
             if grid[i][j+k] != 0 and grid[i][j+k] != letter:
                 return False
             # Proximity
-            if grid[i][j+k] != letter:
-                if (i < len(grid) - 1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k] != 0):
+            if grid[i][j+k] == 0:
+                if (i < len(grid)-1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k] != 0):
                     return False
         if D is "S":
             # Collisions
             if grid[i+k][j] != 0 and grid[i+k][j] != letter:
                 return False
             # Proximity
-            if grid[i+k][j] != letter:
-                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (j > 0 and grid[i+k][j-1] != 0):
+            if grid[i+k][j] == 0:
+                if (j < len(grid[0])-1 and grid[i+k][j+1] != 0) or (j > 0 and grid[i+k][j-1] != 0):
                     return False
 
     # Start and End
     if D is "E":
+        # If the preceding space isn't empty
         if j > 0 and grid[i][j-1] != 0:
             return False
+        # If the succeding space isn't empy
         if j+len(word) < len(grid[0])-1 and grid[i][j+len(word)+1] != 0:
             return False
     if D is "S":
+        # If the preceding space isn't empty
         if i > 0 and grid[i-1][j] != 0:
             return False
+        # If the succeding space isn't empy
         if i+len(word) < len(grid)-1 and grid[i+len(word)+1][j] != 0:
             return False
 
@@ -174,7 +179,6 @@ def generate_grid(words, dim):
     p["location"] = the [i,j] list with the location
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
-    # TODO: Avoid word repetition
     #print("Generating {} grid with {} words.".format(dim, len(words)))
 
     # Initialize grid
@@ -193,13 +197,7 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.6:
-        # Generate new possibilities, if needed
-        if len(possibilities) < 30:
-            print("Getting new words!")
-            sample = draw_words(words)
-            possibilities.extend(generate_possibilities(sample, dim))
-
+    while occupancy < 0.5:
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
@@ -215,12 +213,15 @@ def generate_grid(words, dim):
         #print("After modification:")
         #write_grid(grid, True)
 
-        # Remove invalid possibilities
-        # (we're reading the list backwards, I'd like to replace this with a
-        # comprehension)
-        for i in range(len(possibilities)-1, -1, -1):
-            if not is_valid(possibilities[i], grid) or possibilities[i]["word"] == new["word"]:
-                possibilities.pop(i)
+        # Remove now-invalid possibilities
+        possibilities = [x for x in possibilities if is_valid(x, grid)]
+
+        # Generate new possibilities, if needed
+        while len(possibilities) < 30:
+            print("Getting new words!")
+            sample = draw_words(words)
+            possibilities.extend(generate_possibilities(sample, dim))
+            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] != new["word"]]
 
 
         # Calculate occupancy
