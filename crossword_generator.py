@@ -175,7 +175,7 @@ def generate_grid(words, dim):
     Assumptions:
     Each possibility is a dictionary of the kind:
     p["word"] = the actual string
-    p["location"] = the [i,j] list with the location
+    p["location"] = the [i,j] (i is row and j is col) list with the location
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
     #print("Generating {} grid with {} words.".format(dim, len(words)))
@@ -197,6 +197,7 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
+    # TODO: Add other limits: time, tries, no more words, etc
     while occupancy < 0.5:
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
@@ -219,9 +220,9 @@ def generate_grid(words, dim):
         possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
 
         # Generate new possibilities, if needed
-        while len(possibilities) < 30:
+        while len(possibilities) < 5:
             print("Getting new words!")
-            sample = draw_words(words, 1000)
+            sample = draw_words(words, 1200)
             possibilities.extend(generate_possibilities(sample, dim))
             possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
 
