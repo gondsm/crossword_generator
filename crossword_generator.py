@@ -83,14 +83,14 @@ def is_valid(possibility, grid):
         if j > 0 and grid[i][j-1] != 0:
             return False
         # If the succeding space isn't empy
-        if j+len(word) < len(grid[0])-1 and grid[i][j+len(word)+1] != 0:
+        if j+len(word) < len(grid[0])-1 and grid[i][j+len(word)] != 0:
             return False
     if D is "S":
         # If the preceding space isn't empty
         if i > 0 and grid[i-1][j] != 0:
             return False
         # If the succeding space isn't empy
-        if i+len(word) < len(grid)-1 and grid[i+len(word)+1][j] != 0:
+        if i+len(word) < len(grid)-1 and grid[i+len(word)][j] != 0:
             return False
 
     # If we can't find any collisions, it must be okay!
