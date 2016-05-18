@@ -187,7 +187,7 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.5 and possibilities:
+    while occupancy < 0.75 and possibilities:
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
@@ -215,7 +215,8 @@ def generate_grid(words, dim):
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
         #print("Occupancy: {}.".format(occupancy))
 
-    # ... and return the grid
+    # Report and return the grid
+    print("Build a grid of occupancy {}.".format(occupancy))
     return {"grid": grid, "words": added_words}
 
 def write_grid(grid, screen=False, out_file="table.tex", words=[]):
