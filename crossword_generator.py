@@ -250,12 +250,62 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
         # Print grid to the file and compile
         with open(out_file, "w") as texfile:
             # Write preamble
-            texfile.write("\documentclass{article}" + "\n")
+            texfile.write("\documentclass[a4paper]{article}" + "\n")
             texfile.write(r"\usepackage[utf8]{inputenc}" + "\n")
             texfile.write(r"\usepackage[table]{xcolor}" + "\n")
+            texfile.write(r"\usepackage{multicol}" + "\n")
+            texfile.write(r"\usepackage{fullpage}" + "\n")
+            texfile.write(r"\usepackage{graphicx}" + "\n")
             texfile.write("\n")
             texfile.write(r"\begin{document}" + "\n")
             texfile.write(r"\section*{Complete grid}" + "\n")
+
+            # Resize box
+            texfile.write(r"\resizebox{\textwidth}{!}{")
+
+            # Write table environment and format
+            texfile.write(r"\begin{tabular}{|")
+            for i in range(len(grid[0])):
+                texfile.write(r"c|")
+            texfile.write("}\n\hline\n")
+
+            # Write actual table
+            for line in grid:
+                for index, element in enumerate(line):
+                    if element == 0:
+                        texfile.write(r"\cellcolor{black}0")
+
+                    # This feels a bit hacky, suggestions appreciated
+                    if index != len(line)-1:
+                        texfile.write(" & ")
+
+                texfile.write(r"\\ \hline" + "\n")
+
+            # End tabular environment
+            texfile.write("\end{tabular}\n")
+            texfile.write(r"}" + "\n\n")
+
+            # Write the words that were used
+            if words:
+                texfile.write(r"\section*{Words used for the problem}" + "\n")
+                # Write in several columns
+                texfile.write(r"\begin{multicols}{4}" + "\n")
+                texfile.write(r"\noindent" + "\n")
+                # Sort words by size
+                words.sort(key=lambda word: (len(word), word[0]))
+                # Write words
+                for word in words:
+                    texfile.write(word + r"\\" + "\n")
+                # End multicolumn environment
+                texfile.write(r"\end{multicols}" + "\n")
+
+            # Page break and new section
+            texfile.write(r"\newpage" + "\n")
+            texfile.write(r"\section*{Solution}" + "\n")
+
+            # Write solution
+            # Resize box
+            texfile.write(r"\resizebox{\textwidth}{!}{")
 
             # Write table environment and format
             texfile.write(r"\begin{tabular}{|")
@@ -278,12 +328,7 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
 
             # End tabular environment
             texfile.write("\end{tabular}\n")
-
-            # Write the words that were used
-            if words:
-                texfile.write(r"\section*{Words used for the problem}" + "\n")
-                for word in words:
-                    texfile.write(word + r"\\")
+            texfile.write(r"}")
 
             # End document
             texfile.write("\end{document}\n")
