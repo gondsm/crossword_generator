@@ -73,15 +73,19 @@ def is_valid(possibility, grid):
                 return False
             # Proximity
             if grid[i+k][j] != letter:
-                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (i > 0 and grid[i+k][j-1] != 0):
+                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (j > 0 and grid[i+k][j-1] != 0):
                     return False
 
     # Start and End
     if D is "E":
         if j > 0 and grid[i][j-1] != 0:
             return False
+        if grid[i][j+len(word)] != 0:
+            return False
     if D is "S":
         if i > 0 and grid[i-1][j] != 0:
+            return False
+        if grid[i+len(word)][j] != 0:
             return False
 
     # Detect proximity
