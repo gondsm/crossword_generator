@@ -99,6 +99,32 @@ def is_valid(possibility, grid):
     return True
 
 
+def is_disconnected(possibility, grid):
+    """ This function determines whether a given possibility would be placed as
+    a disconnected word on the grid, i.e. in a way that it crosses no other
+    word.
+    """
+    # Import possibility to local vars, for clarity
+    i = possibility["location"][0]
+    j = possibility["location"][1]
+    word = possibility["word"]
+    D = possibility["D"]
+
+    # Detect collisions and proximity
+    for k, letter in enumerate(list(word)):
+        if D is "E":
+            # Collisions
+            if grid[i][j+k] != 0:
+                return False
+
+        if D is "S":
+            # Collisions
+            if grid[i+k][j] != 0:
+                return False
+
+    # If nothing is detected, it must be disconnected!
+    return True
+
 def add_word_to_grid(possibility, grid):
     """ Adds a possibility to the given grid, which is modified in-place.
     (see generate_grid)
@@ -132,7 +158,7 @@ def draw_words(words, n_words=100):
     else:
         while len(selected_words) < n_words:
             # Choose candidate randomly
-            candidate = words.pop(random.randint(0, len(words)-1))
+            candidate = words[random.randint(0, len(words)-1)]
             # Append candidate if its length is acceptable
             if len(candidate) > 1:
                 selected_words.append(candidate)
@@ -194,13 +220,18 @@ def generate_grid(words, dim):
     # Draw a number of words from the dictionary and generate all possibilities
     sample = draw_words(words, 1000)
     possibilities = generate_possibilities(sample, dim)
+    connected_possibilities = []
 
     # Fill in grid
     occupancy = 0
     # TODO: Add other limits: time, tries, no more words, etc
     while occupancy < 0.5:
         # Add new possibility
-        new = possibilities.pop(random.randint(0, len(possibilities)-1))
+        if connected_possibilities:
+            new = connected_possibilities.pop(random.randint(0, len(connected_possibilities)-1))
+        else:
+            print("No connected possibilities!")
+            new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
@@ -216,6 +247,9 @@ def generate_grid(words, dim):
             sample = draw_words(words, 1200)
             possibilities.extend(generate_possibilities(sample, dim))
             possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
+
+        # Update connected possibilities
+        connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
 
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
