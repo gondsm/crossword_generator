@@ -65,7 +65,7 @@ def is_valid(possibility, grid):
                 return False
             # Proximity
             if grid[i][j+k] != letter:
-                if (i < len(grid) - 1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k]):
+                if (i < len(grid) - 1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k] != 0):
                     return False
         if D is "S":
             # Collisions
@@ -73,7 +73,7 @@ def is_valid(possibility, grid):
                 return False
             # Proximity
             if grid[i+k][j] != letter:
-                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (i > 0 and grid[i+k][j-1]):
+                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (i > 0 and grid[i+k][j-1] != 0):
                     return False
 
     # Start and End
