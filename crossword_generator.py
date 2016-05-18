@@ -2,8 +2,10 @@
 """ Crossword Generator
 
 This script takes a list of words and creates a new latex table representing a
-crosswod puzzle, which is then printed to PDF, and can be printed to actual,
-if you're one of those people.
+crosswod puzzle, which is then printed to PDF, and can be printed to actual
+paper, if you're one of those people.
+
+TODO: Usage instructions
 """
 
 # STL imports
@@ -115,6 +117,7 @@ def add_word_to_grid(possibility, grid):
         for index, a in enumerate(list(word)):
             grid[i+index][j] = a
 
+
 def draw_words(words, n_words=100):
     """ This function draws a number of words from the given (expectedly large)
     pool of words.
@@ -136,6 +139,7 @@ def draw_words(words, n_words=100):
 
     # ... and return the list
     return selected_words
+
 
 # Basic Functions
 def read_word_list(filename):
@@ -178,12 +182,10 @@ def generate_grid(words, dim):
     p["location"] = the [i,j] (i is row and j is col) list with the location
     p["D"] = the direction of the possibility (E for ->, S for down)
     """
-    #print("Generating {} grid with {} words.".format(dim, len(words)))
+    print("Generating {} grid with {} words.".format(dim, len(words)))
 
     # Initialize grid
     grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
-    #print("Initial grid:")
-    #write_grid(grid, True)
 
     # Initialize the list of added words
     added_words = []
@@ -192,8 +194,6 @@ def generate_grid(words, dim):
     # Draw a number of words from the dictionary and generate all possibilities
     sample = draw_words(words, 1000)
     possibilities = generate_possibilities(sample, dim)
-    #print(possibilities)
-    #print("Generated {} possibilities".format(len(possibilities)))
 
     # Fill in grid
     occupancy = 0
@@ -202,19 +202,10 @@ def generate_grid(words, dim):
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
-        # Debug prints
-        #print("Adding new word:")
-        #print(new)
-
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
         added_words.append(new)
         added_strings.append(new["word"])
-
-
-        # Debug prints
-        #print("After modification:")
-        #write_grid(grid, True)
 
         # Remove now-invalid possibilities
         possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
@@ -226,8 +217,7 @@ def generate_grid(words, dim):
             possibilities.extend(generate_possibilities(sample, dim))
             possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
 
-
-        # Calculate occupancy
+        # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
         print("Occupancy: {:2.3f}.".format(occupancy))
 
@@ -235,10 +225,14 @@ def generate_grid(words, dim):
     print("Build a grid of occupancy {}.".format(occupancy))
     return {"grid": grid, "words": added_words}
 
+
 def write_grid(grid, screen=False, out_file="table.tex", words=[]):
     """ This function receives the generated grid and writes it to the file (or
     to the screen, if that's what we want). The grid is expected to be a list
-    of lists.
+    of lists, as used by the remaining functions.
+
+    If a list of words is given, it is taken as the words used on the grid and
+    is printed as such.
     """
     if screen is True:
         # Print grid to the screen
@@ -364,7 +358,7 @@ if __name__ == "__main__":
     words = read_word_list("words.txt")
 
     # Generate grid
-    grid = generate_grid(words, [20,20])
+    grid = generate_grid(words, [20, 20])
 
     # Show grid
     print("Final grid:")

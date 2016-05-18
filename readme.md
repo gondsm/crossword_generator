@@ -12,3 +12,8 @@ I purposefully designed and implemented this little project without performing r
 2. A number (100, by default) of words are chosen randomly from the list that is given, and these are the words that will be used hereafter.
 3. The technique expands the list of words into a list of possibilities, where each possibility encodes a possible starting location for a word, as well as its direction. This essentially constitutes all possible words that can be placed into the grid.
 4. A new word is taken from the list of possibilities and placed on the grid. This makes it so a number of possibilities are now invalid, and these are removed from the list. Steps 3 and 4 are repeated until the grid is as full as we want it to be.
+
+Usage
+---
+
+For now (until I implement arparsing), all you have to do is run the script on a folder where a "words.txt" file with one word per line exists. I recommend using the aforementioned lists!
