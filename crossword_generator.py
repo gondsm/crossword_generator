@@ -115,19 +115,12 @@ def add_word_to_grid(possibility, grid):
         for index, a in enumerate(list(word)):
             grid[i+index][j] = a
 
-# Basic Functions
-def read_word_list(filename, n_words=100):
-    """ This function reads the file and returns the words read. It expects a
-    file where each word is in a line.
+def draw_words(words, n_words=100):
+    """ This function draws a number of words from the given (expectedly large)
+    pool of words.
     """
-    # Initialize words lists
-    words = []
+    # Initialize list
     selected_words = []
-
-    # Quick'n'dirty file reading
-    with open(filename) as words_file:
-        for line in words_file:
-            words.append(line.strip())
 
     # If we have few words, we use them all
     if len(words) <= n_words:
@@ -143,6 +136,23 @@ def read_word_list(filename, n_words=100):
 
     # ... and return the list
     return selected_words
+
+# Basic Functions
+def read_word_list(filename, n_words=100):
+    """ This function reads the file and returns the words read. It expects a
+    file where each word is in a line.
+    """
+    # Initialize words list
+    words = []
+
+    # Quick'n'dirty file reading
+    with open(filename) as words_file:
+        for line in words_file:
+            words.append(line.strip())
+
+    # and we're done
+    return words
+
 
 
 def generate_grid(words, dim):
@@ -180,14 +190,21 @@ def generate_grid(words, dim):
     # Initialize the list of added words
     added_words = []
 
-    # Generate all possibilities
-    possibilities = generate_possibilities(words, dim)
+    # Draw a number of words from the dictionary and generate all possibilities
+    sample = draw_words(words)
+    possibilities = generate_possibilities(sample, dim)
     #print(possibilities)
     #print("Generated {} possibilities".format(len(possibilities)))
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.75 and possibilities:
+    while occupancy < 0.75:
+        # Generate new possibilities, if needed
+        if not possibilities:
+            print("Getting new words!")
+            sample = draw_words(words)
+            possibilities = generate_possibilities(sample, dim)
+
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
@@ -213,7 +230,7 @@ def generate_grid(words, dim):
 
         # Calculate occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
-        #print("Occupancy: {}.".format(occupancy))
+        print("Occupancy: {:2.3f}.".format(occupancy))
 
     # Report and return the grid
     print("Build a grid of occupancy {}.".format(occupancy))
