@@ -124,6 +124,7 @@ def is_disconnected(possibility, grid):
 
     # If nothing is detected, it must be disconnected!
     return True
+    #return False
 
 def add_word_to_grid(possibility, grid):
     """ Adds a possibility to the given grid, which is modified in-place.
@@ -238,12 +239,13 @@ def generate_grid(words, dim):
     while occupancy < 0.5:
         # Generate new possibilities, if needed
         while not connected_possibilities:
-            print("Getting new words!")
+            print("Getting new words!", end=" ")
             sample = draw_words(words, 1200)
             possibilities.extend(generate_possibilities(sample, dim))
             possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
             # Update connected possibilities
             connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
+            print("Possibilities: {}. Connected: {}.".format(len(possibilities), len(connected_possibilities)))
 
         # Add new possibility
         if connected_possibilities:
@@ -263,7 +265,7 @@ def generate_grid(words, dim):
 
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
-        print("Occupancy: {:2.3f}.".format(occupancy))
+        print("Word added. Occupancy: {:2.3f}. Possibilities: {}. Connected: {}.".format(occupancy, len(possibilities), len(connected_possibilities)))
 
     # Report and return the grid
     print("Build a grid of occupancy {}.".format(occupancy))
