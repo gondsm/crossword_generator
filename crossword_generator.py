@@ -200,10 +200,10 @@ def generate_grid(words, dim):
     occupancy = 0
     while occupancy < 0.6:
         # Generate new possibilities, if needed
-        if not possibilities:
+        if len(possibilities) < 30:
             print("Getting new words!")
             sample = draw_words(words)
-            possibilities = generate_possibilities(sample, dim)
+            possibilities.extend(generate_possibilities(sample, dim))
 
         # Add new possibility
         new = possibilities.pop(random.randint(0, len(possibilities)-1))
