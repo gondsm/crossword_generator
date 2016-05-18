@@ -129,7 +129,7 @@ def draw_words(words, n_words=100):
     else:
         while len(selected_words) < n_words:
             # Choose candidate randomly
-            candidate = words[random.randint(0, len(words)-1)]
+            candidate = words.pop(random.randint(0, len(words)-1))
             # Append candidate if it's not already there
             if candidate not in selected_words:
                 selected_words.append(candidate)
@@ -198,7 +198,7 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.75:
+    while occupancy < 0.6:
         # Generate new possibilities, if needed
         if not possibilities:
             print("Getting new words!")
@@ -224,7 +224,7 @@ def generate_grid(words, dim):
         # (we're reading the list backwards, I'd like to replace this with a
         # comprehension)
         for i in range(len(possibilities)-1, -1, -1):
-            if not is_valid(possibilities[i], grid):
+            if not is_valid(possibilities[i], grid) or possibilities[i]["word"] == new["word"]:
                 possibilities.pop(i)
 
 
