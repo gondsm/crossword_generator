@@ -130,15 +130,15 @@ def draw_words(words, n_words=100):
         while len(selected_words) < n_words:
             # Choose candidate randomly
             candidate = words.pop(random.randint(0, len(words)-1))
-            # Append candidate if it's not already there
-            if candidate not in selected_words:
+            # Append candidate if its length is acceptable
+            if len(candidate) > 1:
                 selected_words.append(candidate)
 
     # ... and return the list
     return selected_words
 
 # Basic Functions
-def read_word_list(filename, n_words=100):
+def read_word_list(filename):
     """ This function reads the file and returns the words read. It expects a
     file where each word is in a line.
     """
@@ -152,7 +152,6 @@ def read_word_list(filename, n_words=100):
 
     # and we're done
     return words
-
 
 
 def generate_grid(words, dim):
@@ -219,7 +218,7 @@ def generate_grid(words, dim):
         # Generate new possibilities, if needed
         while len(possibilities) < 30:
             print("Getting new words!")
-            sample = draw_words(words)
+            sample = draw_words(words, 1000)
             possibilities.extend(generate_possibilities(sample, dim))
             possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] != new["word"]]
 
