@@ -192,9 +192,11 @@ def generate_grid(words, dim):
     Algorithm:
     This function operates by taking the words it receives and generating an
     expanded dictionary with all possible locations and directions of each
-    word. It then adds words at random and, for each word added, removes all
-    possibilities that are now invalid. This is done until the grid is above a
-    certain completion level.
+    word. These are then filtered for words that are connected to words already
+    in the grid. It then adds words at random and, for each word added, removes
+    all possibilities that are now invalid, and updates the connected
+    possibilities.
+    This is done until the grid is above a given completion level.
 
     Return:
     This function returns a dictionary, in which ["grid"] is the grid, and
@@ -222,10 +224,27 @@ def generate_grid(words, dim):
     possibilities = generate_possibilities(sample, dim)
     connected_possibilities = []
 
+    # Add seed word (should be large)
+    seed = possibilities.pop(random.randint(0, len(possibilities)-1))
+    while len(seed["word"]) < 9:
+        seed = possibilities.pop(random.randint(0, len(possibilities)-1))
+    add_word_to_grid(seed, grid)
+    print("Seed:")
+    print(seed)
+
     # Fill in grid
     occupancy = 0
     # TODO: Add other limits: time, tries, no more words, etc
     while occupancy < 0.5:
+        # Generate new possibilities, if needed
+        while not connected_possibilities:
+            print("Getting new words!")
+            sample = draw_words(words, 1200)
+            possibilities.extend(generate_possibilities(sample, dim))
+            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
+            # Update connected possibilities
+            connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
+
         # Add new possibility
         if connected_possibilities:
             new = connected_possibilities.pop(random.randint(0, len(connected_possibilities)-1))
@@ -238,17 +257,8 @@ def generate_grid(words, dim):
         added_words.append(new)
         added_strings.append(new["word"])
 
-        # Remove now-invalid possibilities
+        # Remove now-invalid possibilities and update connected possibilities
         possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
-
-        # Generate new possibilities, if needed
-        while len(possibilities) < 5:
-            print("Getting new words!")
-            sample = draw_words(words, 1200)
-            possibilities.extend(generate_possibilities(sample, dim))
-            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
-
-        # Update connected possibilities
         connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
 
         # Update occupancy
