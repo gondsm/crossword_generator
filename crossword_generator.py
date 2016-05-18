@@ -60,13 +60,34 @@ def is_valid(possibility, grid):
     # Detect collisions
     for k, letter in enumerate(list(word)):
         if D is "E":
+            # Collisions
             if grid[i][j+k] != 0 and grid[i][j+k] != letter:
                 return False
+            # Proximity
+            if grid[i][j+k] != letter:
+                if (i < len(grid) - 1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k]):
+                    return False
         if D is "S":
+            # Collisions
             if grid[i+k][j] != 0 and grid[i+k][j] != letter:
                 return False
+            # Proximity
+            if grid[i+k][j] != letter:
+                if (j < len(grid[0]) - 1 and grid[i+k][j+1] != 0) or (i > 0 and grid[i+k][j-1]):
+                    return False
+
+    # Start and End
+    if D is "E":
+        if j > 0 and grid[i][j-1] != 0:
+            return False
+    if D is "S":
+        if i > 0 and grid[i-1][j] != 0:
+            return False
 
     # Detect proximity
+    #for k, letter in enumerate(list(word)):
+    #    if D is "E":
+    #    if D is "S":
 
     # If we can't find any collisions, it must be okay!
     return True
@@ -162,9 +183,9 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    while occupancy < 0.5:
+    while occupancy < 0.5 and possibilities:
         # Add new possibility
-        new = possibilities[random.randint(0, len(possibilities)-1)]
+        new = possibilities.pop(random.randint(0, len(possibilities)-1))
 
         # Debug prints
         #print("Adding new word:")
