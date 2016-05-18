@@ -187,9 +187,10 @@ def generate_grid(words, dim):
 
     # Initialize the list of added words
     added_words = []
+    added_strings = []
 
     # Draw a number of words from the dictionary and generate all possibilities
-    sample = draw_words(words)
+    sample = draw_words(words, 1000)
     possibilities = generate_possibilities(sample, dim)
     #print(possibilities)
     #print("Generated {} possibilities".format(len(possibilities)))
@@ -207,20 +208,22 @@ def generate_grid(words, dim):
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
         added_words.append(new)
+        added_strings.append(new["word"])
+
 
         # Debug prints
         #print("After modification:")
         #write_grid(grid, True)
 
         # Remove now-invalid possibilities
-        possibilities = [x for x in possibilities if is_valid(x, grid)]
+        possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
 
         # Generate new possibilities, if needed
         while len(possibilities) < 30:
             print("Getting new words!")
             sample = draw_words(words, 1000)
             possibilities.extend(generate_possibilities(sample, dim))
-            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] != new["word"]]
+            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
 
 
         # Calculate occupancy
