@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 import os
 import shutil
+import time
 
 
 # Auxiliary Functions
@@ -185,10 +186,13 @@ def read_word_list(filename):
     return words
 
 
-def generate_grid(words, dim):
+def generate_grid(words, dim, timeout=30):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
-    dim[0] * dim[1] (rows * columns).
+    dim[0] * dim[1] (rows * columns). The function also receives a timeout,
+    which is used to control the time-consuming section of the code. If the
+    timeout is reached, the functions returns the best grid it was able to
+    achieve thus far.
 
     Algorithm:
     This function operates by taking the words it receives and generating an
@@ -237,10 +241,14 @@ def generate_grid(words, dim):
 
     # Fill in grid
     occupancy = 0
-    # TODO: Add other limits: time, tries, no more words, etc
+
+    # Initialize time structure
+    start_time = time.time()
+
+    # TODO: Add other limits: tries, no more words, etc
     # TODO: Given the performance impact of "connectedness", it should be a parameter
     # TODO: If connectedness is turning out to be a problem, add some large word
-    while occupancy < 0.5:
+    while occupancy < 0.5 and time.time() - start_time < timeout:
         # Generate new possibilities, if needed
         while not connected_possibilities:
             print("Getting new words!", end=" ")
@@ -408,7 +416,7 @@ if __name__ == "__main__":
     words = read_word_list("words.txt")
 
     # Generate grid
-    grid = generate_grid(words, [5, 5])
+    grid = generate_grid(words, [20, 20])
 
     # Show grid
     print("Final grid:")
