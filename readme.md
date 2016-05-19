@@ -13,6 +13,11 @@ I purposefully designed and implemented this little project without performing r
 3. The technique expands the list of words into a list of possibilities, where each possibility encodes a possible starting location for a word, as well as its direction. This essentially constitutes all possible words that can be placed into the grid.
 4. A new word is taken from the list of possibilities and placed on the grid. This makes it so a number of possibilities are now invalid, and these are removed from the list. Steps 3 and 4 are repeated until the grid is as full as we want it to be.
 
+Performance Considerations
+---
+
+On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid with 50% completion. I am currently looking into ways of improving this mark, and already have a ton of ideas, so stay tuned!
+
 Usage
 ---
 

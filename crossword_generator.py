@@ -186,13 +186,14 @@ def read_word_list(filename):
     return words
 
 
-def generate_grid(words, dim, timeout=30):
+def generate_grid(words, dim, timeout=60, occ_goal=0.5):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
     dim[0] * dim[1] (rows * columns). The function also receives a timeout,
     which is used to control the time-consuming section of the code. If the
     timeout is reached, the functions returns the best grid it was able to
-    achieve thus far.
+    achieve thus far. Lastly, occ_goal represents the fraction of squares that
+    should be, ideally, filled in.
 
     Algorithm:
     This function operates by taking the words it receives and generating an
@@ -248,7 +249,7 @@ def generate_grid(words, dim, timeout=30):
     # TODO: Add other limits: tries, no more words, etc
     # TODO: Given the performance impact of "connectedness", it should be a parameter
     # TODO: If connectedness is turning out to be a problem, add some large word
-    while occupancy < 0.5 and time.time() - start_time < timeout:
+    while occupancy < occ_goal and time.time() - start_time < timeout:
         # Generate new possibilities, if needed
         while not connected_possibilities:
             print("Getting new words!", end=" ")
@@ -412,6 +413,7 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
 
 
 if __name__ == "__main__":
+    # TODO: argparse
     # Read words from file
     words = read_word_list("words.txt")
 
