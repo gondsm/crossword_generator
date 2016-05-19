@@ -227,11 +227,13 @@ def generate_grid(words, dim):
 
     # Add seed word (should be large)
     seed = possibilities.pop(random.randint(0, len(possibilities)-1))
-    while len(seed["word"]) < 9:
+    while len(seed["word"]) < min(9, dim[0], dim[1]):
         seed = possibilities.pop(random.randint(0, len(possibilities)-1))
     add_word_to_grid(seed, grid)
     print("Seed:")
     print(seed)
+    added_words.append(seed)
+    added_strings.append(seed["word"])
 
     # Fill in grid
     occupancy = 0
@@ -406,7 +408,7 @@ if __name__ == "__main__":
     words = read_word_list("words.txt")
 
     # Generate grid
-    grid = generate_grid(words, [20, 20])
+    grid = generate_grid(words, [5, 5])
 
     # Show grid
     print("Final grid:")
