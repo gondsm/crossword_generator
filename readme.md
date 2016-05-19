@@ -16,7 +16,7 @@ I purposefully designed and implemented this little project without performing r
 Performance Considerations
 ---
 
-On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid with 50% completion. I am currently looking into ways of improving this mark, and already have a ton of ideas, so stay tuned!
+On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid with 50% completion in some 45 seconds. I am currently looking into ways of improving this mark, and already have a ton of ideas, so stay tuned!
 
 Usage
 ---
