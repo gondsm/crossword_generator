@@ -27,13 +27,13 @@ def generate_possibilities(words, dim):
     for word in words:
         # D = E
         for i in range(dim[0]):
-            for j in range(dim[1] - len(word)):
+            for j in range(dim[1] - len(word) + 1):
                 possibilities.append({"word": word,
                                       "location": [i, j],
                                       "D": "E"})
 
         # D = S
-        for i in range(dim[0] - len(word)):
+        for i in range(dim[0] - len(word) + 1):
             for j in range(dim[1]):
                 possibilities.append({"word": word,
                                       "location": [i, j],
@@ -85,14 +85,14 @@ def is_valid(possibility, grid):
         if j > 0 and grid[i][j-1] != 0:
             return False
         # If the succeding space isn't empy
-        if j+len(word) < len(grid[0])-1 and grid[i][j+len(word)] != 0:
+        if j+len(word) < len(grid[0]) and grid[i][j+len(word)] != 0:
             return False
     if D is "S":
         # If the preceding space isn't empty
         if i > 0 and grid[i-1][j] != 0:
             return False
         # If the succeding space isn't empy
-        if i+len(word) < len(grid)-1 and grid[i+len(word)][j] != 0:
+        if i+len(word) < len(grid) and grid[i+len(word)][j] != 0:
             return False
 
     # If we can't find any collisions, it must be okay!
@@ -124,7 +124,7 @@ def is_disconnected(possibility, grid):
 
     # If nothing is detected, it must be disconnected!
     return True
-    #return False
+
 
 def add_word_to_grid(possibility, grid):
     """ Adds a possibility to the given grid, which is modified in-place.
@@ -236,6 +236,8 @@ def generate_grid(words, dim):
     # Fill in grid
     occupancy = 0
     # TODO: Add other limits: time, tries, no more words, etc
+    # TODO: Given the performance impact of "connectedness", it should be a parameter
+    # TODO: If connectedness is turning out to be a problem, add some large word
     while occupancy < 0.5:
         # Generate new possibilities, if needed
         while not connected_possibilities:
@@ -298,7 +300,7 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
             texfile.write(r"\usepackage{graphicx}" + "\n")
             texfile.write("\n")
             texfile.write(r"\begin{document}" + "\n")
-            texfile.write(r"\section*{Complete grid}" + "\n")
+            texfile.write(r"\section*{Challenge}" + "\n")
 
             # Resize box
             texfile.write(r"\resizebox{\textwidth}{!}{")
