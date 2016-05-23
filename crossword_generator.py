@@ -43,12 +43,24 @@ def generate_possibilities(words, dim):
     # ... and return all of the possibilities.
     return possibilities
 
+def generate_single_possibility(words, dim):
+    """ This function returns a randomly-generated possibility, instead of generating all
+    possible ones.
+    """
+    # Generate possibility
+    possibility = {"word": words[random.randint(0, len(words)-1)],
+                   "location": [random.randint(0, dim[0]-1), random.randint(0, dim[1]-1)],
+                   "D": "S" if random.random() > 0.5 else "E"}
+
+    # Return it
+    return possibility
 
 def is_valid(possibility, grid):
     """ This function determines whether a possibility is still valid in the
     given grid. (see generate_grid)
 
     A possibility is deemed invalid if:
+     -> it extends out of bounds
      -> it collides with any word that already exists, i.e. if any of its
      elements does not match the words already in the grid;
      -> it would be placed too close to another word, so that it would give rise
@@ -60,6 +72,13 @@ def is_valid(possibility, grid):
     j = possibility["location"][1]
     word = possibility["word"]
     D = possibility["D"]
+
+    # Boundaries
+    if D == "E" and j + len(word) > len(grid[0]):
+        return False
+
+    if D == "S" and i + len(word) > len(grid):
+        return False
 
     # Detect collisions and proximity
     for k, letter in enumerate(list(word)):
@@ -281,9 +300,84 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.5):
         print("Word added. Occupancy: {:2.3f}. Possibilities: {}. Connected: {}.".format(occupancy, len(possibilities), len(connected_possibilities)))
 
     # Report and return the grid
-    print("Build a grid of occupancy {}.".format(occupancy))
+    print("Built a grid of occupancy {}.".format(occupancy))
     return {"grid": grid, "words": added_words}
 
+
+def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
+    """ This function receives a list of words and creates a new grid, which
+    represents our puzzle. The newly-created grid is of dimensions
+    dim[0] * dim[1] (rows * columns). The function also receives a timeout,
+    which is used to control the time-consuming section of the code. If the
+    timeout is reached, the functions returns the best grid it was able to
+    achieve thus far. Lastly, occ_goal represents the fraction of squares that
+    should be, ideally, filled in.
+
+    Algorithm:
+    This function operates by taking the words it receives randomly generating possibilities
+    until a valid one is found. It is then added to the grid.
+    This is done until the grid is above a given completion level.
+
+    Return:
+    This function returns a dictionary, in which ["grid"] is the grid, and
+    "words" is the list of included words. The grid is a simple list of lists,
+    where zeroes represent the slots that were not filled in, with the
+    remaining slots containing a single letter each.
+
+    Assumptions:
+    Each possibility is a dictionary of the kind:
+    p["word"] = the actual string
+    p["location"] = the [i,j] (i is row and j is col) list with the location
+    p["D"] = the direction of the possibility (E for ->, S for down)
+    """
+    print("Generating {} grid with {} words.".format(dim, len(words)))
+
+    # Initialize grid
+    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
+
+    # Initialize the list of added words
+    added_words = []
+    added_strings = []
+
+    # Filter small words
+    words = [x for x in words if len(x) > 2]
+
+    # Add seed word (should be large)
+    seed = generate_single_possibility(words, dim)
+    while not is_valid(seed, grid) or len(seed["word"]) < min(9, dim[0], dim[1]):
+        seed = generate_single_possibility(words, dim)
+
+    add_word_to_grid(seed, grid)
+    print("Seed:")
+    print(seed)
+    added_words.append(seed)
+    added_strings.append(seed["word"])
+
+    # Fill in grid
+    occupancy = 0
+
+    # Initialize time structure
+    start_time = time.time()
+
+
+    while occupancy < occ_goal and time.time() - start_time < timeout:
+        # Generate new valid possibility
+        new = generate_single_possibility(words, dim)
+        while not is_valid(new, grid) or is_disconnected(new, grid):
+            new = generate_single_possibility(words, dim)
+
+        # Add word to grid and to the list of added words
+        add_word_to_grid(new, grid)
+        added_words.append(new)
+        added_strings.append(new["word"])
+
+        # Update occupancy
+        occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
+        print("Word added. Occupancy: {:2.3f}.".format(occupancy))
+
+    # Report and return the grid
+    print("Built a grid of occupancy {}.".format(occupancy))
+    return {"grid": grid, "words": added_words}
 
 def write_grid(grid, screen=False, out_file="table.tex", words=[]):
     """ This function receives the generated grid and writes it to the file (or
@@ -418,7 +512,7 @@ if __name__ == "__main__":
     words = read_word_list("words.txt")
 
     # Generate grid
-    grid = generate_grid(words, [20, 20])
+    grid = generate_grid_new(words, [20, 20])
 
     # Show grid
     print("Final grid:")
