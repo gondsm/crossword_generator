@@ -23,7 +23,7 @@ The script depends on LaTeX for producing the PDF output. However, the grid can 
 Performance Considerations
 ---
 
-On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid with 50% completion in some 45 seconds. I am currently looking into ways of improving this mark, and already have a ton of ideas, so stay tuned!
+On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid with 50% completion in some ~~45~~ 10 seconds (with the new algorithm). I am currently looking into ways of improving this mark, and already have a ton of ideas, so stay tuned!
 
 Usage
 ---
