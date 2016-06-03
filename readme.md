@@ -28,4 +28,4 @@ On my consumer-grade machine (i7-6700HQ) the algorithm can generate a 20x20 grid
 Usage
 ---
 
-For now (until I implement argparsing), all you have to do is run the script on a folder where a "words.txt" file with one word per line exists. I recommend using the aforementioned lists!
+All you have to do is run the script on a folder where a "words.txt" file with one word per line exists. I recommend using the aforementioned lists! Run `./crossword_generator -h` to see all available options.

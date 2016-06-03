@@ -4,8 +4,6 @@
 This script takes a list of words and creates a new latex table representing a
 crosswod puzzle, which is then printed to PDF, and can be printed to actual
 paper, if you're one of those people.
-
-TODO: Usage instructions
 """
 
 # STL imports
@@ -16,6 +14,7 @@ import tempfile
 import os
 import shutil
 import time
+import argparse
 
 
 # Auxiliary Functions
@@ -507,12 +506,34 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
 
 
 if __name__ == "__main__":
-    # TODO: argparse
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Generate a crossword puzzle.')
+    parser.add_argument('--word-file', type=str,
+                        default="words.txt",
+                        dest="word_file",
+                        help="A file containing words, one word per line.")
+    parser.add_argument('--dim', type=int,
+                        nargs="+",
+                        default=[20, 20],
+                        dest="dim",
+                        help="Dimensions of the grid to build.")
+    parser.add_argument('-t', type=int,
+                        default=60,
+                        dest="timeout",
+                        help="Maximum execution time, in seconds.")
+    parser.add_argument('-o', type=float,
+                        default=0.5,
+                        dest="target_occ",
+                        help="Minimum desired occupancy of the final grid.")
+    args = parser.parse_args()
+
     # Read words from file
-    words = read_word_list("words.txt")
+    words = read_word_list(args.word_file)
 
     # Generate grid
-    grid = generate_grid_new(words, [20, 20])
+    dim = args.dim if len(args.dim)==2 else [args.dim[0], args.dim[0]]
+    print("Making a grid of dimension{}, in {} seconds with a target occupancy of {}.".format(dim, args.timeout, args.target_occ))
+    grid = generate_grid_new(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
 
     # Show grid
     print("Final grid:")
