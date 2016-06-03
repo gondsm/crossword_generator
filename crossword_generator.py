@@ -605,11 +605,11 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Generate a crossword puzzle.')
-    parser.add_argument('--word-file', type=str,
+    parser.add_argument('-f', type=str,
                         default="words.txt",
                         dest="word_file",
                         help="A file containing words, one word per line.")
-    parser.add_argument('--dim', type=int,
+    parser.add_argument('-d', type=int,
                         nargs="+",
                         default=[20, 20],
                         dest="dim",
