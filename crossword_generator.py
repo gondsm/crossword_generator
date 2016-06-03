@@ -72,11 +72,10 @@ def is_valid(possibility, grid):
     word = possibility["word"]
     D = possibility["D"]
 
-    # Boundaries
-    if D == "E" and j + len(word) > len(grid[0]):
-        return False
 
-    if D == "S" and i + len(word) > len(grid):
+
+    # Boundaries
+    if not is_within_bounds(possibility, grid):
         return False
 
     # Detect collisions and proximity
@@ -187,7 +186,6 @@ def draw_words(words, n_words=100):
     return selected_words
 
 
-# Basic Functions
 def read_word_list(filename):
     """ This function reads the file and returns the words read. It expects a
     file where each word is in a line.
@@ -204,6 +202,36 @@ def read_word_list(filename):
     return words
 
 
+def is_within_bounds(possibility, grid):
+    """ This function returns whether a possibility falls within the bounds of
+    the grid.
+    """
+    # Import possibility to local vars, for clarity
+    i = possibility["location"][0]
+    j = possibility["location"][1]
+    word = possibility["word"]
+    D = possibility["D"]
+
+    # Boundaries
+    if (D == "E" and j + len(word) > len(grid[0])) or (D == "S" and i + len(word) > len(grid)):
+        return False
+
+    # If no issues are found...
+    return True
+
+
+def calculate_grid_score(possibilities):
+    """ This function calculates the score of a grid composed of the given
+    possibilities.
+
+    The score is composed of:
+    -> Occupancy, in the range [0,1]
+    -> Number of superpositions
+    """
+    ...
+
+
+# Grid generation
 def generate_grid(words, dim, timeout=60, occ_goal=0.5):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
@@ -265,7 +293,6 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.5):
     start_time = time.time()
 
     # TODO: Add other limits: tries, no more words, etc
-    # TODO: Given the performance impact of "connectedness", it should be a parameter
     # TODO: If connectedness is turning out to be a problem, add some large word
     while occupancy < occ_goal and time.time() - start_time < timeout:
         # Generate new possibilities, if needed
@@ -377,6 +404,76 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
     # Report and return the grid
     print("Built a grid of occupancy {}.".format(occupancy))
     return {"grid": grid, "words": added_words}
+
+
+def generate_grid_score(words, dim, timeout=60, occ_goal=0.5):
+    """ This function receives a list of words and creates a new grid, which
+    represents our puzzle. The newly-created grid is of dimensions
+    dim[0] * dim[1] (rows * columns). The function also receives a timeout,
+    which is used to control the time-consuming section of the code. If the
+    timeout is reached, the functions returns the best grid it was able to
+    achieve thus far. Lastly, occ_goal represents the fraction of squares that
+    should be, ideally, filled in.
+
+    Algorithm:
+    This function operates by generating a number of possibilities, and
+    attributing a score to each. The best possibility among the generated ones
+    is selected for inclusion in the grid. Once the timeout has happened,
+    possibilities with overlap are randomly removed until a valid grid is
+    obtained.
+
+    Return:
+    This function returns a dictionary, in which ["grid"] is the grid, and
+    "words" is the list of included words. The grid is a simple list of lists,
+    where zeroes represent the slots that were not filled in, with the
+    remaining slots containing a single letter each.
+
+    Assumptions:
+    Each possibility is a dictionary of the kind:
+    p["word"] = the actual string
+    p["location"] = the [i,j] (i is row and j is col) list with the location
+    p["D"] = the direction of the possibility (E for ->, S for down)
+    """
+    print("Generating {} grid with {} words.".format(dim, len(words)))
+
+    # Initialize grid
+    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
+
+    # Initialize the list of added words
+    added_words = []
+    added_strings = []
+
+    # Filter small words
+    words = [x for x in words if len(x) > 2]
+
+    # Add seed word (should be large)
+    seed = generate_single_possibility(words, dim)
+    while not is_valid(seed, grid) or len(seed["word"]) < min(9, dim[0], dim[1]):
+        seed = generate_single_possibility(words, dim)
+    added_words.append(seed)
+
+    # Initialize time structure
+    start_time = time.time()
+
+    # Main loop of the thing
+    while time.time() - start_time < timeout:
+        # Generate a new set of possibilities
+        # Score them
+        # Select the best
+        # Add to the grid
+        ...
+
+    # Remove possibilities until a valid grid is obtained
+
+    # Actually add words to the grid
+    for word in added_words:
+        add_word_to_grid(word, grid)
+        added_strings.append(word["word"])
+
+    # Report and return the grid
+    print("Built a grid of occupancy {}.".format(occupancy))
+    return {"grid": grid, "words": added_words}
+
 
 def write_grid(grid, screen=False, out_file="table.tex", words=[]):
     """ This function receives the generated grid and writes it to the file (or
