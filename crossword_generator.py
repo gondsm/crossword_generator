@@ -72,8 +72,6 @@ def is_valid(possibility, grid):
     word = possibility["word"]
     D = possibility["D"]
 
-
-
     # Boundaries
     if not is_within_bounds(possibility, grid):
         return False
@@ -232,7 +230,9 @@ def calculate_grid_score(possibilities, dim):
     initially zeroed-out grid are incremented. Squares with a number of over 2
     and with letters that do not match, are invalid.
     """
+    # Not done yet
     raise NotImplementedError
+    
     # Initialize grid
     grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
 
@@ -419,7 +419,7 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
     # Initialize time structure
     start_time = time.time()
 
-
+    # Main loop
     while occupancy < occ_goal and time.time() - start_time < timeout:
         # Generate new valid possibility
         new = generate_single_possibility(words, dim)
