@@ -421,10 +421,24 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
 
     # Main loop
     while occupancy < occ_goal and time.time() - start_time < timeout:
-        # Generate new valid possibility
-        new = generate_single_possibility(words, dim)
-        while not is_valid(new, grid) or is_disconnected(new, grid):
+        # Generate new candidates (think tournament selection)
+        candidates = []
+        i = 0
+        # While we don't have any, or we have and have been searching for a short time
+        while not candidates or (candidates and i < 20000):
+            # Get new possibility
             new = generate_single_possibility(words, dim)
+            # Keep going until it's valid
+            while not is_valid(new, grid) or is_disconnected(new, grid):
+                new = generate_single_possibility(words, dim)
+                # Increment search "time"
+                i += 1
+            # Add to list of candidates
+            candidates.append(new)
+
+        # Sort candidates by length
+        candidates = sorted(candidates, key=lambda k: len(k['word']), reverse=True)
+        new = candidates[0]
 
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
@@ -433,7 +447,7 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
 
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
-        print("Word added. Occupancy: {:2.3f}.".format(occupancy))
+        print("Word \"{}\" added. Occupancy: {:2.3f}.".format(new["word"],occupancy))
 
     # Report and return the grid
     print("Built a grid of occupancy {}.".format(occupancy))
