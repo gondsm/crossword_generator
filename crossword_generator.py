@@ -219,7 +219,7 @@ def calculate_grid_score(possibilities, dim):
 
 
 # Grid generation
-def generate_grid(words, dim, timeout=60, occ_goal=0.5):
+def generate_grid(words, dim, timeout=60, occ_goal=0.9):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
     dim[0] * dim[1] (rows * columns). The function also receives a timeout,
@@ -514,14 +514,13 @@ if __name__ == "__main__":
                         dest="timeout",
                         help="Maximum execution time, in seconds.")
     parser.add_argument('-o', type=float,
-                        default=0.5,
+                        default=0.9,
                         dest="target_occ",
                         help="Minimum desired occupancy of the final grid.")
     parser.add_argument('-p', type=str,
                         default="out.pdf",
                         dest="out_pdf",
                         help="Name of the output pdf file.")
-
     args = parser.parse_args()
 
     # Read words from file
