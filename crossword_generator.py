@@ -30,7 +30,8 @@ def generate_single_possibility(words, dim):
     # Return it
     return possibility
 
-def is_valid(possibility, grid):
+
+def is_valid(possibility, grid, words):
     """ This function determines whether a possibility is still valid in the
     given grid. (see generate_grid)
 
@@ -38,9 +39,11 @@ def is_valid(possibility, grid):
      -> it extends out of bounds
      -> it collides with any word that already exists, i.e. if any of its
      elements does not match the words already in the grid;
-     -> it would be placed too close to another word, so that it would give rise
-     to many short non-words;
      -> if the cell that precedes and succedes it in its direction is not empty.
+
+    The function also analyses how the word interacts with previous adjacent
+    words, and invalidates the possibility of returns a list with the new
+    words, if applicable.
     """
     # Import possibility to local vars, for clarity
     i = possibility["location"][0]
@@ -49,46 +52,78 @@ def is_valid(possibility, grid):
     D = possibility["D"]
 
     # Boundaries
-    if not is_within_bounds(possibility, grid):
-        return False
+    if (D == "E" and j + len(word) > len(grid[0])) or (D == "S" and i + len(word) > len(grid)):
+        return [False, []]
 
-    # Detect collisions and proximity
+    # Collisions
     for k, letter in enumerate(list(word)):
         if D is "E":
             # Collisions
             if grid[i][j+k] != 0 and grid[i][j+k] != letter:
-                return False
-            # Proximity
-            if grid[i][j+k] == 0:
-                if (i < len(grid)-1 and grid[i+1][j+k] != 0) or (i > 0 and grid[i-1][j+k] != 0):
-                    return False
+                return [False, []]
         if D is "S":
             # Collisions
             if grid[i+k][j] != 0 and grid[i+k][j] != letter:
-                return False
-            # Proximity
-            if grid[i+k][j] == 0:
-                if (j < len(grid[0])-1 and grid[i+k][j+1] != 0) or (j > 0 and grid[i+k][j-1] != 0):
-                    return False
+                return [False, []]
 
     # Start and End
     if D is "E":
         # If the preceding space isn't empty
         if j > 0 and grid[i][j-1] != 0:
-            return False
+            return [False, []]
         # If the succeding space isn't empy
         if j+len(word) < len(grid[0]) and grid[i][j+len(word)] != 0:
-            return False
+            return [False, []]
     if D is "S":
         # If the preceding space isn't empty
         if i > 0 and grid[i-1][j] != 0:
-            return False
+            return [False, []]
         # If the succeding space isn't empy
         if i+len(word) < len(grid) and grid[i+len(word)][j] != 0:
-            return False
+            return [False, []]
 
-    # If we can't find any collisions, it must be okay!
-    return True
+    # Detect if new words are formed
+    new_words = []
+    for k, letter in enumerate(list(word)):
+        if D is "E":
+            # If the space was originally blank and there are adjacent letters
+            if grid[i][j+k] == 0 and (i > 0 and grid[i-1][j+k] != 0 or i < len(grid)-1 and grid[i+1][j+k]):
+                # Then we have to extract this new word
+                poss_word  = [letter]
+                l = 1
+                while i+l < len(grid[0]) and grid[i+l][j+k] != 0:
+                    poss_word.append(grid[i+l][j+k])
+                    l+=1
+                l = 1
+                while i-l > 0 and grid[i-l][j+k] != 0:
+                    poss_word.insert(0, grid[i-l][j+k])
+                    l+=1
+                poss_word = ''.join(poss_word)
+                # And check if it exists in the list
+                if poss_word not in words:
+                    return [False, []]
+                new_words.append({"D": "S", "word":poss_word, "location": [i-l+1,j+k]})
+        if D is "S":
+            # If the space was originally blank and there are adjacent letter
+            if grid[i+k][j] == 0 and (j > 0 and grid[i+k][j-1] != 0 or j < len(grid[0])-1 and grid[i+k][j+1]):
+                # Then we have to extract this new word
+                poss_word  = [letter]
+                l = 1
+                while j+l < len(grid) and grid[i+k][j+l] != 0:
+                    poss_word.append(grid[i+k][j+l])
+                    l+=1
+                l = 1
+                while j-l > 0 and grid[i+k][j-l] != 0:
+                    poss_word.insert(0, grid[i+k][j-l])
+                    l+=1
+                poss_word = ''.join(poss_word)
+                # And check if it exists in the list
+                if poss_word not in words:
+                    return [False, []]
+                new_words.append({"D": "E", "word":poss_word, "location": [i+k,j-l+1]})
+
+    # If we can't find any issues, it must be okay!
+    return [True, new_words]
 
 
 def is_disconnected(possibility, grid):
@@ -153,24 +188,6 @@ def read_word_list(filename):
     return words
 
 
-def is_within_bounds(possibility, grid):
-    """ This function returns whether a possibility falls within the bounds of
-    the grid.
-    """
-    # Import possibility to local vars, for clarity
-    i = possibility["location"][0]
-    j = possibility["location"][1]
-    word = possibility["word"]
-    D = possibility["D"]
-
-    # Boundaries
-    if (D == "E" and j + len(word) > len(grid[0])) or (D == "S" and i + len(word) > len(grid)):
-        return False
-
-    # If no issues are found...
-    return True
-
-
 # Grid generation
 def generate_grid(words, dim, timeout=60, occ_goal=0.9):
     """ This function receives a list of words and creates a new grid, which
@@ -206,9 +223,6 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.9):
     # Initialize the list of added words
     added_words = []
 
-    # Filter small words
-    words = [x for x in words if len(x) > 2]
-
     # Initialize time structure and occupancy
     start_time = time.time()
     occupancy = 0
@@ -219,12 +233,15 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.9):
         candidates = []
         i = 0
         # While we don't have any, or we have and have been searching for a short time
-        while not candidates or (candidates and i < 20000):
-            # Get new possibility
-            new = generate_single_possibility(words, dim)
-            # Keep going until it's valid
-            while not is_valid(new, grid) or (is_disconnected(new, grid) and occupancy > 0):
+        new_words = []
+        while not candidates or (candidates and i < 100):
+            valid = False
+            # Generate a new candidate
+            while not valid:
+                # Get new possibility
                 new = generate_single_possibility(words, dim)
+                # Evaluate validity and get new words generated
+                valid, new_words = is_valid(new, grid, words)
                 # Increment search "time"
                 i += 1
             # Add to list of candidates
@@ -233,14 +250,28 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.9):
         # Sort candidates by length
         candidates = sorted(candidates, key=lambda k: len(k['word']), reverse=True)
         new = candidates[0]
+        # Get possible words generated by new candidate
+        # TODO: improve this crap
+        valid, new_words = is_valid(new, grid, words)
 
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
         added_words.append(new)
 
+        # Add new words to the words list
+        for word in new_words:
+            added_words.append(word)
+
+        # Remove words from list
+        words.remove(new["word"])
+        for word in new_words:
+            words.remove(word["word"])
+
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
         print("Word \"{}\" added. Occupancy: {:2.3f}.".format(new["word"],occupancy))
+        if new_words:
+            print("This also created the words:", new_words)
 
     # Report and return the grid
     print("Built a grid of occupancy {}.".format(occupancy))
@@ -409,6 +440,9 @@ if __name__ == "__main__":
 
     # Read words from file
     words = read_word_list(args.word_file)
+
+    # Filter small words
+    words = [x for x in words if len(x) > 2]
 
     # Generate grid
     dim = args.dim if len(args.dim)==2 else [args.dim[0], args.dim[0]]
