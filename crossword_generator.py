@@ -662,7 +662,7 @@ if __name__ == "__main__":
 
     # Generate grid
     dim = args.dim if len(args.dim)==2 else [args.dim[0], args.dim[0]]
-    print("Making a grid of dimension{}, in {} seconds with a target occupancy of {}.".format(dim, args.timeout, args.target_occ))
+    print("Making a grid of dimension {}, in {} seconds with a target occupancy of {}.".format(dim, args.timeout, args.target_occ))
     grid = generate_grid_new(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
 
     # Print to file and compile
