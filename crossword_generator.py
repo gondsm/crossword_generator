@@ -18,30 +18,6 @@ import argparse
 
 
 # Auxiliary Functions
-def generate_possibilities(words, dim):
-    """ This function generates the possibilities (see generate_grid) """
-    # Initialize the list of possibilities
-    possibilities = []
-
-    # For every word in the list
-    for word in words:
-        # D = E
-        for i in range(dim[0]):
-            for j in range(dim[1] - len(word) + 1):
-                possibilities.append({"word": word,
-                                      "location": [i, j],
-                                      "D": "E"})
-
-        # D = S
-        for i in range(dim[0] - len(word) + 1):
-            for j in range(dim[1]):
-                possibilities.append({"word": word,
-                                      "location": [i, j],
-                                      "D": "S"})
-
-    # ... and return all of the possibilities.
-    return possibilities
-
 def generate_single_possibility(words, dim):
     """ This function returns a randomly-generated possibility, instead of generating all
     possible ones.
@@ -161,29 +137,6 @@ def add_word_to_grid(possibility, grid):
             grid[i+index][j] = a
 
 
-def draw_words(words, n_words=100):
-    """ This function draws a number of words from the given (expectedly large)
-    pool of words.
-    """
-    # Initialize list
-    selected_words = []
-
-    # If we have few words, we use them all
-    if len(words) <= n_words:
-        selected_words = words
-    # If we have enough words, we have to select
-    else:
-        while len(selected_words) < n_words:
-            # Choose candidate randomly
-            candidate = words[random.randint(0, len(words)-1)]
-            # Append candidate if its length is acceptable
-            if len(candidate) > 1:
-                selected_words.append(candidate)
-
-    # ... and return the list
-    return selected_words
-
-
 def read_word_list(filename):
     """ This function reads the file and returns the words read. It expects a
     file where each word is in a line.
@@ -267,104 +220,6 @@ def calculate_grid_score(possibilities, dim):
 
 # Grid generation
 def generate_grid(words, dim, timeout=60, occ_goal=0.5):
-    """ This function receives a list of words and creates a new grid, which
-    represents our puzzle. The newly-created grid is of dimensions
-    dim[0] * dim[1] (rows * columns). The function also receives a timeout,
-    which is used to control the time-consuming section of the code. If the
-    timeout is reached, the functions returns the best grid it was able to
-    achieve thus far. Lastly, occ_goal represents the fraction of squares that
-    should be, ideally, filled in.
-
-    Algorithm:
-    This function operates by taking the words it receives and generating an
-    expanded dictionary with all possible locations and directions of each
-    word. These are then filtered for words that are connected to words already
-    in the grid. It then adds words at random and, for each word added, removes
-    all possibilities that are now invalid, and updates the connected
-    possibilities.
-    This is done until the grid is above a given completion level.
-
-    Return:
-    This function returns a dictionary, in which ["grid"] is the grid, and
-    "words" is the list of included words. The grid is a simple list of lists,
-    where zeroes represent the slots that were not filled in, with the
-    remaining slots containing a single letter each.
-
-    Assumptions:
-    Each possibility is a dictionary of the kind:
-    p["word"] = the actual string
-    p["location"] = the [i,j] (i is row and j is col) list with the location
-    p["D"] = the direction of the possibility (E for ->, S for down)
-    """
-    print("Generating {} grid with {} words.".format(dim, len(words)))
-
-    # Initialize grid
-    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
-
-    # Initialize the list of added words
-    added_words = []
-    added_strings = []
-
-    # Draw a number of words from the dictionary and generate all possibilities
-    sample = draw_words(words, 1000)
-    possibilities = generate_possibilities(sample, dim)
-    connected_possibilities = []
-
-    # Add seed word (should be large)
-    seed = possibilities.pop(random.randint(0, len(possibilities)-1))
-    while len(seed["word"]) < min(9, dim[0], dim[1]):
-        seed = possibilities.pop(random.randint(0, len(possibilities)-1))
-    add_word_to_grid(seed, grid)
-    print("Seed:")
-    print(seed)
-    added_words.append(seed)
-    added_strings.append(seed["word"])
-
-    # Fill in grid
-    occupancy = 0
-
-    # Initialize time structure
-    start_time = time.time()
-
-    # TODO: Add other limits: tries, no more words, etc
-    # TODO: If connectedness is turning out to be a problem, add some large word
-    while occupancy < occ_goal and time.time() - start_time < timeout:
-        # Generate new possibilities, if needed
-        while not connected_possibilities:
-            print("Getting new words!", end=" ")
-            sample = draw_words(words, 1200)
-            possibilities.extend(generate_possibilities(sample, dim))
-            possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
-            # Update connected possibilities
-            connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
-            print("Possibilities: {}. Connected: {}.".format(len(possibilities), len(connected_possibilities)))
-
-        # Add new possibility
-        if connected_possibilities:
-            new = connected_possibilities.pop(random.randint(0, len(connected_possibilities)-1))
-        else:
-            print("No connected possibilities!")
-            new = possibilities.pop(random.randint(0, len(possibilities)-1))
-
-        # Add word to grid and to the list of added words
-        add_word_to_grid(new, grid)
-        added_words.append(new)
-        added_strings.append(new["word"])
-
-        # Remove now-invalid possibilities and update connected possibilities
-        possibilities = [x for x in possibilities if is_valid(x, grid) and x["word"] not in added_strings]
-        connected_possibilities = [x for x in possibilities if not is_disconnected(x, grid)]
-
-        # Update occupancy
-        occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
-        print("Word added. Occupancy: {:2.3f}. Possibilities: {}. Connected: {}.".format(occupancy, len(possibilities), len(connected_possibilities)))
-
-    # Report and return the grid
-    print("Built a grid of occupancy {}.".format(occupancy))
-    return {"grid": grid, "words": added_words}
-
-
-def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
     """ This function receives a list of words and creates a new grid, which
     represents our puzzle. The newly-created grid is of dimensions
     dim[0] * dim[1] (rows * columns). The function also receives a timeout,
@@ -675,7 +530,7 @@ if __name__ == "__main__":
     # Generate grid
     dim = args.dim if len(args.dim)==2 else [args.dim[0], args.dim[0]]
     print("Making a grid of dimension {}, in {} seconds with a target occupancy of {}.".format(dim, args.timeout, args.target_occ))
-    grid = generate_grid_new(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
+    grid = generate_grid(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
 
     # Print to file and compile
     write_grid(grid["grid"], words=[x["word"] for x in grid["words"]], out_pdf=args.out_pdf)
@@ -685,5 +540,3 @@ if __name__ == "__main__":
     write_grid(grid["grid"], screen=True)
     print("Words:")
     pprint.pprint(grid["words"])
-
-    #print(calculate_grid_score(grid["words"], dim))
