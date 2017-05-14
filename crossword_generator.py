@@ -508,7 +508,7 @@ def generate_grid_score(words, dim, timeout=60, occ_goal=0.5):
     return {"grid": grid, "words": added_words}
 
 
-def write_grid(grid, screen=False, out_file="table.tex", words=[]):
+def write_grid(grid, screen=False, out_file="table.tex", out_pdf="out.pdf", keep_tex=False, words=[]):
     """ This function receives the generated grid and writes it to the file (or
     to the screen, if that's what we want). The grid is expected to be a list
     of lists, as used by the remaining functions.
@@ -631,8 +631,15 @@ def write_grid(grid, screen=False, out_file="table.tex", words=[]):
                 proc = subprocess.call(['pdflatex', "out.tex"])
 
                 # Copy PDF back to the original directory
-                shutil.copy("out.pdf", original_dir)
+                shutil.copy("out.pdf", original_dir+"/"+out_pdf)
+
+                # Move back to the original directory
+                os.chdir(original_dir)
             print("=== Done! ===\n")
+
+        # Remove tex file?
+        if not keep_tex:
+            os.remove(out_file)
 
 
 if __name__ == "__main__":
@@ -655,6 +662,11 @@ if __name__ == "__main__":
                         default=0.5,
                         dest="target_occ",
                         help="Minimum desired occupancy of the final grid.")
+    parser.add_argument('-p', type=str,
+                        default="out.pdf",
+                        dest="out_pdf",
+                        help="Name of the output pdf file.")
+
     args = parser.parse_args()
 
     # Read words from file
@@ -666,7 +678,7 @@ if __name__ == "__main__":
     grid = generate_grid_new(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
 
     # Print to file and compile
-    write_grid(grid["grid"], words=[x["word"] for x in grid["words"]])
+    write_grid(grid["grid"], words=[x["word"] for x in grid["words"]], out_pdf=args.out_pdf)
 
     # Show grid
     print("Final grid:")
