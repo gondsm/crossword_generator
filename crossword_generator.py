@@ -510,7 +510,7 @@ if __name__ == "__main__":
                         dest="dim",
                         help="Dimensions of the grid to build.")
     parser.add_argument('-t', type=int,
-                        default=60,
+                        default=10,
                         dest="timeout",
                         help="Maximum execution time, in seconds.")
     parser.add_argument('-o', type=float,
