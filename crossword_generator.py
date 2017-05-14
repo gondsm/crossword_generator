@@ -397,27 +397,13 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
 
     # Initialize the list of added words
     added_words = []
-    added_strings = []
 
     # Filter small words
     words = [x for x in words if len(x) > 2]
 
-    # Add seed word (should be large)
-    seed = generate_single_possibility(words, dim)
-    while not is_valid(seed, grid) or len(seed["word"]) < min(9, dim[0], dim[1]):
-        seed = generate_single_possibility(words, dim)
-
-    add_word_to_grid(seed, grid)
-    print("Seed:")
-    print(seed)
-    added_words.append(seed)
-    added_strings.append(seed["word"])
-
-    # Fill in grid
-    occupancy = 0
-
-    # Initialize time structure
+    # Initialize time structure and occupancy
     start_time = time.time()
+    occupancy = 0
 
     # Main loop
     while occupancy < occ_goal and time.time() - start_time < timeout:
@@ -429,7 +415,7 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
             # Get new possibility
             new = generate_single_possibility(words, dim)
             # Keep going until it's valid
-            while not is_valid(new, grid) or is_disconnected(new, grid):
+            while not is_valid(new, grid) or (is_disconnected(new, grid) and occupancy > 0):
                 new = generate_single_possibility(words, dim)
                 # Increment search "time"
                 i += 1
@@ -443,7 +429,6 @@ def generate_grid_new(words, dim, timeout=60, occ_goal=0.5):
         # Add word to grid and to the list of added words
         add_word_to_grid(new, grid)
         added_words.append(new)
-        added_strings.append(new["word"])
 
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
