@@ -171,53 +171,6 @@ def is_within_bounds(possibility, grid):
     return True
 
 
-def calculate_grid_score(possibilities, dim):
-    """ This function calculates the score of a grid composed of the given
-    possibilities.
-
-    The score is composed of:
-    -> Occupancy, in the range [0,1]
-    -> Invalid-ness (number of invalid squares/total number of squares)
-
-    For every possibility in the list, the squares it would occupy in an
-    initially zeroed-out grid are incremented. Squares with a number of over 2
-    and with letters that do not match, are invalid.
-    """
-    # Not done yet
-    raise NotImplementedError
-    
-    # Initialize grid
-    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
-
-    # Add every possibility to the grid
-    for possibility in possibilities:
-        # Import to local variables, for clarity
-        i = possibility["location"][0]
-        j = possibility["location"][1]
-        word = possibility["word"]
-        # (I can't seem to be able to use the slicing as above)
-        if possibility["D"] == "E":
-            for index, a in enumerate(list(word)):
-                grid[i][j+index] += 1
-        if possibility["D"] == "S":
-            for index, a in enumerate(list(word)):
-                grid[i+index][j] += 1
-
-    # Calculate occupancy
-    occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
-
-    # Calculate "invalid-ness"
-    # We'll do it in a cycle, for now. It's late and I'm not feeling smart.
-    # TODO: Fill in
-    invalid = 0
-
-    # Print
-    #print("Score results: occupancy = {}, invalid = {}.".format(occupancy, invalid))
-
-    # Return the difference
-    return occupancy - invalid
-
-
 # Grid generation
 def generate_grid(words, dim, timeout=60, occ_goal=0.9):
     """ This function receives a list of words and creates a new grid, which
@@ -288,75 +241,6 @@ def generate_grid(words, dim, timeout=60, occ_goal=0.9):
         # Update occupancy
         occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
         print("Word \"{}\" added. Occupancy: {:2.3f}.".format(new["word"],occupancy))
-
-    # Report and return the grid
-    print("Built a grid of occupancy {}.".format(occupancy))
-    return {"grid": grid, "words": added_words}
-
-
-def generate_grid_score(words, dim, timeout=60, occ_goal=0.5):
-    """ This function receives a list of words and creates a new grid, which
-    represents our puzzle. The newly-created grid is of dimensions
-    dim[0] * dim[1] (rows * columns). The function also receives a timeout,
-    which is used to control the time-consuming section of the code. If the
-    timeout is reached, the functions returns the best grid it was able to
-    achieve thus far. Lastly, occ_goal represents the fraction of squares that
-    should be, ideally, filled in.
-
-    Algorithm:
-    This function operates by generating a number of possibilities, and
-    attributing a score to each. The best possibility among the generated ones
-    is selected for inclusion in the grid. Once the timeout has happened,
-    possibilities with overlap are randomly removed until a valid grid is
-    obtained.
-
-    Return:
-    This function returns a dictionary, in which ["grid"] is the grid, and
-    "words" is the list of included words. The grid is a simple list of lists,
-    where zeroes represent the slots that were not filled in, with the
-    remaining slots containing a single letter each.
-
-    Assumptions:
-    Each possibility is a dictionary of the kind:
-    p["word"] = the actual string
-    p["location"] = the [i,j] (i is row and j is col) list with the location
-    p["D"] = the direction of the possibility (E for ->, S for down)
-    """
-    print("Generating {} grid with {} words.".format(dim, len(words)))
-
-    # Initialize grid
-    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
-
-    # Initialize the list of added words
-    added_words = []
-    added_strings = []
-
-    # Filter small words
-    words = [x for x in words if len(x) > 2]
-
-    # Add seed word (should be large)
-    seed = generate_single_possibility(words, dim)
-    while not is_valid(seed, grid) or len(seed["word"]) < min(9, dim[0], dim[1]):
-        seed = generate_single_possibility(words, dim)
-    added_words.append(seed)
-
-    # Initialize time structure
-    start_time = time.time()
-
-    # Main loop of the thing
-    while time.time() - start_time < timeout:
-        # Generate a new set of possibilities
-        # Score them
-        # Select the best
-        # Add to the grid
-        ...
-
-    # Remove possibilities until a valid grid is obtained
-
-    # Actually add words to the grid
-    for word in added_words:
-        add_word_to_grid(word, grid)
-        added_strings.append(word["word"])
 
     # Report and return the grid
     print("Built a grid of occupancy {}.".format(occupancy))
