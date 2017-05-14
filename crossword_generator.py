@@ -220,15 +220,49 @@ def is_within_bounds(possibility, grid):
     return True
 
 
-def calculate_grid_score(possibilities):
+def calculate_grid_score(possibilities, dim):
     """ This function calculates the score of a grid composed of the given
     possibilities.
 
     The score is composed of:
     -> Occupancy, in the range [0,1]
-    -> Number of superpositions
+    -> Invalid-ness (number of invalid squares/total number of squares)
+
+    For every possibility in the list, the squares it would occupy in an
+    initially zeroed-out grid are incremented. Squares with a number of over 2
+    and with letters that do not match, are invalid.
     """
-    ...
+    raise NotImplementedError
+    # Initialize grid
+    grid = [x[:] for x in [[0]*dim[1]]*dim[0]]
+
+    # Add every possibility to the grid
+    for possibility in possibilities:
+        # Import to local variables, for clarity
+        i = possibility["location"][0]
+        j = possibility["location"][1]
+        word = possibility["word"]
+        # (I can't seem to be able to use the slicing as above)
+        if possibility["D"] == "E":
+            for index, a in enumerate(list(word)):
+                grid[i][j+index] += 1
+        if possibility["D"] == "S":
+            for index, a in enumerate(list(word)):
+                grid[i+index][j] += 1
+
+    # Calculate occupancy
+    occupancy = 1 - (sum(x.count(0) for x in grid) / (dim[0]*dim[1]))
+
+    # Calculate "invalid-ness"
+    # We'll do it in a cycle, for now. It's late and I'm not feeling smart.
+    # TODO: Fill in
+    invalid = 0
+
+    # Print
+    #print("Score results: occupancy = {}, invalid = {}.".format(occupancy, invalid))
+
+    # Return the difference
+    return occupancy - invalid
 
 
 # Grid generation
@@ -632,11 +666,13 @@ if __name__ == "__main__":
     print("Making a grid of dimension{}, in {} seconds with a target occupancy of {}.".format(dim, args.timeout, args.target_occ))
     grid = generate_grid_new(words, dim, timeout=args.timeout, occ_goal=args.target_occ)
 
+    # Print to file and compile
+    write_grid(grid["grid"], words=[x["word"] for x in grid["words"]])
+
     # Show grid
     print("Final grid:")
     write_grid(grid["grid"], screen=True)
     print("Words:")
     pprint.pprint(grid["words"])
 
-    # Print to file and compile
-    write_grid(grid["grid"], words=[x["word"] for x in grid["words"]])
+    #print(calculate_grid_score(grid["words"], dim))
