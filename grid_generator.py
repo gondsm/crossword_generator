@@ -10,10 +10,6 @@ class GridGenerator:
         self.target_occupancy = target_occupancy
         self.reset()
 
-    def reset(self):
-        self.grid = basic_ops.create_empty_grid(self.dimensions)
-        self.words_in_grid = []
-
     def get_grid(self):
         return self.grid
 
@@ -22,6 +18,8 @@ class GridGenerator:
 
     def generate_grid(self):
         """ Updates the internal grid with content.
+
+        This is the main outward-facing function
         """
         self.reset()
         print("Generating {} grid with {} words.".format(self.dimensions, len(self.word_list)))
@@ -36,6 +34,10 @@ class GridGenerator:
             self.reset_grid_to_existing_words()
 
         print("Built a grid of occupancy {}.".format(basic_ops.compute_occupancy(self.grid)))
+
+    def reset(self):
+        self.grid = basic_ops.create_empty_grid(self.dimensions)
+        self.words_in_grid = []
 
     def generate_content_for_grid(self):
         """ Uses the basic fill algorithm to fill up the crossword grid.

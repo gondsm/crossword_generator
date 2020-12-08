@@ -148,7 +148,7 @@ def is_valid(possibility, grid, words):
 
 
 def score_candidate(candidate_word, new_words):
-    return len(candidate_word) + 100*len(new_words)
+    return len(candidate_word) + 10*len(new_words)
 
 
 def add_word_to_grid(possibility, grid):
@@ -193,39 +193,37 @@ def create_empty_grid(dimensions):
     return [x[:] for x in [[0]*dimensions[1]]*dimensions[0]]
 
 
-def generate_valid_candidates(grid, words, dim):
-    # Generate new candidates (think tournament selection)
+def generate_valid_candidates(grid, words, dim, timeout):
+    # Generate new candidates
     candidates = []
     scores = []
     new_words = []
     tries = 0
 
-    # While we don't have any, or we have and have been searching for a short time
-    while not candidates or (candidates and tries < 100):
-        score = None
+    start_time = time.time()
 
-        # Generate a new candidate
-        while score == None:
-            # Increment search "time"
-            tries += 1
+    # Generate a new candidate
+    while not candidates and time.time() < start_time + timeout:
+        # Increment search "time"
+        tries += 1
 
-            # Get new possibility
-            new = generate_random_possibility(words, dim)
+        # Get new possibility
+        new = generate_random_possibility(words, dim)
 
-            # Evaluate validity
-            if not is_valid(new, grid, words):
-                continue
+        # Evaluate validity
+        if not is_valid(new, grid, words):
+            continue
 
-            # Find new words that this possibility generates
-            new_words = find_new_words(new["word"], new["location"][0], new["location"][1], new["D"], grid, words)
+        # Find new words that this possibility generates
+        new_words = find_new_words(new["word"], new["location"][0], new["location"][1], new["D"], grid, words)
 
-            # If new_words is None, then the possibility is invalid
-            if new_words == None:
-                new_words = []
-                continue
+        # If new_words is None, then the possibility is invalid
+        if new_words == None:
+            new_words = []
+            continue
 
-            # Calculate this possibility's score
-            score = score_candidate(new["word"], new_words)
+        # Calculate this possibility's score
+        score = score_candidate(new["word"], new_words)
 
         # Add to list of candidates
         candidates.append(new)
@@ -239,6 +237,10 @@ def is_cell_free(line, col, grid):
 
     Does not throw if the indices are out of bounds. These cases return as free.
     """
+    # Negative indices are "legal", but we treat them as out of bounds.
+    if line < 0 or col < 0:
+        return True
+
     try:
         return grid[line][col] == 0
     except IndexError:
@@ -246,27 +248,30 @@ def is_cell_free(line, col, grid):
 
 
 def is_isolated(possibility, grid):
+    """ Determines whether a given possibility is completely isolated in the given grid.
+
+    It is assumed that the possibility is valid, of course.
+    """
     # Import possibility to local vars, for clarity
     line = possibility["location"][0]
     column = possibility["location"][1]
     word = possibility["word"]
     direction = possibility["D"]
 
+    # The word cannot be isolated if there is something at its ends
     if not ends_are_isolated(word, line, column, direction, grid):
         return False
 
-    curr_line = line
-    curr_col = column
+    # Look at the cells that surround the word
     for i in range(len(word)):
         if direction == "E":
-            if not is_cell_free(curr_line-1, curr_col, grid) or not is_cell_free(curr_line+1, curr_col, grid):
+            if not is_cell_free(line-1, column+i, grid) or not is_cell_free(line+1, column+i, grid):
                 return False
-            curr_col += 1
         if direction == "S":
-            if not is_cell_free(curr_line, curr_col+1, grid) or not is_cell_free(curr_line, curr_col+1, grid):
+            if not is_cell_free(line+i, column-1, grid) or not is_cell_free(line+i, column+1, grid):
                 return False
-            curr_line += 1
 
+    # If nothing was found, then the word is isolated
     return True
 
 
@@ -284,7 +289,12 @@ def basic_grid_fill(grid, occ_goal, timeout, dim, words):
 
     while occupancy < occ_goal and time.time() - start_time < timeout:
         # Generate some candidates
-        candidates, scores, new_words = generate_valid_candidates(grid, words, dim)
+        # This is limited to 1/10 of the total time we can use.
+        candidates, scores, new_words = generate_valid_candidates(grid, words, dim, timeout/10)
+
+        # If there are no candidates, we move to the next iteration. This ensures that we can actually respect timeouts.
+        if not candidates:
+            continue
 
         # Select best candidate
         new, new_score = select_candidate(candidates, scores)

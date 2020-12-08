@@ -18,7 +18,6 @@ from grid_generator import GridGenerator
 def parse_cmdline_args():
     """ Uses argparse to get commands line args.
     """
-    # Parse arguments
     parser = argparse.ArgumentParser(description='Generate a crossword puzzle.')
     parser.add_argument('-f', type=str,
                         default="words.txt",
@@ -38,18 +37,34 @@ def parse_cmdline_args():
                         dest="timeout",
                         help="Maximum execution time, in seconds, per execution loop.")
     parser.add_argument('-o', type=float,
-                        default=0.9,
+                        default=1.0,
                         dest="target_occ",
-                        help="Desired occupancy of the final grid.")
+                        help="Desired occupancy of the final grid. Default is 1.0, which just uses all of the allotted time.")
     parser.add_argument('-p', type=str,
                         default="out.pdf",
                         dest="out_pdf",
                         help="Name of the output pdf file.")
+    parser.add_argument('-a', type=str,
+                        default="basic",
+                        dest="algorithm",
+                        help="The algorithm to use.")
+
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    # Parse command line
+def create_generator(algorithm, word_list, dimensions, n_loops, timeout, target_occupancy):
+    """ Constructs the generator object for the given algorithm.
+    """
+    algorithm_class_map = {"basic": GridGenerator}
+
+    try:
+        return algorithm_class_map[algorithm](word_list, dimensions, n_loops, timeout, target_occupancy)
+    except KeyError:
+        print("Could not create generator object for unknown algorithm: {}.".format(algorithm))
+
+
+def main():
+    # Parse args
     args = parse_cmdline_args()
 
     # Read words from file
@@ -58,7 +73,9 @@ if __name__ == "__main__":
 
     # Construct the generator object
     dim = args.dim if len(args.dim)==2 else [args.dim[0], args.dim[0]]
-    generator = GridGenerator(words, dim, args.n_loops, args.timeout, args.target_occ)
+    generator = create_generator(args.algorithm, words, dim, args.n_loops, args.timeout, args.target_occ)
+    if not generator:
+        return
 
     # Generate the grid
     generator.generate_grid()
@@ -68,3 +85,7 @@ if __name__ == "__main__":
     words_in_grid = generator.get_words_in_grid()
     file_ops.write_grid_to_file(grid, words=[x["word"] for x in words_in_grid], out_pdf=args.out_pdf)
     file_ops.write_grid_to_screen(grid, words_in_grid)
+
+
+if __name__ == "__main__":
+    main()
